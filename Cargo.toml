@@ -1,0 +1,23 @@
+[package]
+name = "lightboard"
+version = "0.1.0"
+authors = ["superlou <lousimons@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dmx = "0.2"
+
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.5"
+
+ggez = "0.5"
+
+gfx_core = "0.9"
+gfx_device_gl = "0.16"
+
+imgui = "0.2"
+imgui-gfx-renderer = "0.2"
+
+image = "0.22"

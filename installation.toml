@@ -1,0 +1,14 @@
+size = [10, 10]
+
+[fixtures.1]
+kind = "cheap_led_par_light"
+channel = 0
+mode = 0
+pos = [0, 0]
+
+
+[fixtures.2]
+kind = "cheap_led_par_light"
+channel = 0
+mode = 0
+pos = [0, 5]

@@ -1,0 +1,4 @@
+[modes.0]
+elements = [
+  {r=5, g=6, b=7, i=4}
+]
