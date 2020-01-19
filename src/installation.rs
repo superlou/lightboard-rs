@@ -1,9 +1,24 @@
 use std::collections::HashMap;
 use std::fs::read_to_string;
 use serde::Deserialize;
+use nalgebra::Point2;
+
+enum ElementType {
+    Rgbiu,
+    Rgbi,
+    Uv,
+    Smoke,
+    Actuator,
+    Gobo,
+}
+
+pub struct Element {
+    kind: ElementType,
+}
 
 pub struct Fixture {
-
+    elements: HashMap<String, Element>,
+    pub pos: Point2<f32>,
 }
 
 pub struct Installation {
@@ -30,9 +45,21 @@ impl Installation {
         let config: InstallationConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
         dbg!(&config);
 
+        let fixtures: HashMap<_, _> = config.fixtures.into_iter().map(|(name, config)| {
+            let fixture = Fixture {
+                elements: HashMap::new(),
+                pos: Point2::new(config.pos.0, config.pos.1),
+            };
+            (name, fixture)
+        }).collect();
+
         Installation {
             size: config.size,
-            fixtures: HashMap::new()
+            fixtures: fixtures,
         }
+    }
+
+    pub fn fixtures(&self) -> &HashMap<String, Fixture> {
+        &self.fixtures
     }
 }

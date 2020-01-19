@@ -1,4 +1,6 @@
 [modes.0]
-elements = [
-  {r=5, g=6, b=7, i=4}
-]
+elements.0 = {type="rgbiu", i=4, r=5, g=6, b=7, u=8}
+
+[modes.1]
+elements.0 = {type="rgbi", i=4, r=5, g=6, b=7}
+elements.1 = {type="u", u=8}

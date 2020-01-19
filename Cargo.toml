@@ -21,3 +21,5 @@ imgui = "0.2"
 imgui-gfx-renderer = "0.2"
 
 image = "0.22"
+
+nalgebra = "0.18.0"
