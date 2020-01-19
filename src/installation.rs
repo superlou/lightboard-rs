@@ -62,4 +62,8 @@ impl Installation {
     pub fn fixtures(&self) -> &HashMap<String, Fixture> {
         &self.fixtures
     }
+
+    pub fn size(&self) -> &(f32, f32) {
+        &self.size
+    }
 }

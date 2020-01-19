@@ -41,11 +41,30 @@ struct Visualizer {
     height: f32,
 }
 
+fn make_view_rect(installation: (f32, f32), window: (f32, f32)) -> Rect {
+    let install_aspect_ratio = &installation.1 / &installation.0;
+    let window_aspect_ratio = window.1 / window.0;
+
+    let width;
+    let height;
+
+    if window_aspect_ratio < install_aspect_ratio {
+        height = installation.1;
+        width = height / window_aspect_ratio;
+    } else {
+        width = installation.0;
+        height = width * window_aspect_ratio;
+    }
+
+    Rect::new(0.0, height, width, -height)
+}
+
 impl Visualizer {
     pub fn new(ctx: &mut Context, hidpi_factor: f32, installation: Installation,
                dmx_send: mpsc::Sender<[u8; 8]>) -> Visualizer
     {
-        let view_rect = Rect::new(0.0, 10.0, 10., -10.);
+        let view_rect = make_view_rect((installation.size().0, installation.size().1),
+                                       (INITIAL_WIDTH, INITIAL_HEIGHT));
         set_screen_coordinates(ctx, view_rect).unwrap();
 
         Visualizer {
@@ -102,9 +121,10 @@ impl EventHandler for Visualizer {
         self.imgui_wrapper.update_mouse_pos(x, y);
     }
 
-    fn resize_event(&mut self, _ctx: &mut Context, width: f32, height: f32) {
-        self.width = width;
-        self.height = height;
+    fn resize_event(&mut self, ctx: &mut Context, width: f32, height: f32) {
+        let view_rect = make_view_rect((self.installation.size().0, self.installation.size().1),
+                                       (width, height));
+        set_screen_coordinates(ctx, view_rect).unwrap();
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, _x: f32, _y: f32) {
