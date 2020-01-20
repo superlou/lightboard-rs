@@ -1,6 +1,8 @@
-[modes.0]
-elements.0 = {type="rgbiu", i=4, r=5, g=6, b=7, u=8}
+[[modes]]
+name = "0"
+elements.0 = {kind="rgbiu", i=4, r=5, g=6, b=7, u=8}
 
-[modes.1]
-elements.0 = {type="rgbi", i=4, r=5, g=6, b=7}
-elements.1 = {type="u", u=8}
+[[modes]]
+name = "1"
+elements.0 = {kind="rgbi", i=4, r=5, g=6, b=7}
+elements.1 = {kind="u", u=8}

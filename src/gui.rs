@@ -4,9 +4,10 @@ use ggez::conf::WindowMode;
 use ggez::event::{MouseButton, KeyCode, KeyMods};
 use ggez::event::{self, EventHandler};
 use ggez::nalgebra::Point2;
+use std::sync::mpsc;
 use crate::imgui_wrapper::ImGuiWrapper;
 use crate::installation::Installation;
-use std::sync::mpsc;
+use crate::installation::Fixture;
 
 const INITIAL_WIDTH: f32 = 800.0;
 const INITIAL_HEIGHT: f32 = 600.0;
@@ -80,10 +81,56 @@ impl Visualizer {
     }
 }
 
+lazy_static! {
+    static ref COLOR_FIXTURE_BG: graphics::Color = graphics::Color::new(0.1, 0.1, 0.1, 1.0);
+    static ref COLOR_FIXTURE_OUTLINE: graphics::Color = graphics::Color::new(0.4, 0.4, 0.4, 1.0);
+}
+
+fn draw_fixture(fixture: &Fixture, ctx: &mut Context) {
+    let location = fixture.pos;
+
+    let background = graphics::Mesh::new_rectangle(
+        ctx,
+        graphics::DrawMode::fill(),
+        Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0, 1.0),
+        *COLOR_FIXTURE_BG,
+    ).unwrap();
+    graphics::draw(ctx, &background, DrawParam::default().dest(location)).unwrap();
+
+    for (i, (_name, element)) in fixture.elements.iter().enumerate() {
+        let color = graphics::Color::new(element.color().0, element.color().1, element.color().2, 1.0);
+
+        let circle = graphics::Mesh::new_circle(
+            ctx,
+            graphics::DrawMode::fill(),
+            Point2::new(i as f32 * 1.0 + 0.5, 0.5),
+            0.5,
+            0.001,
+            color,
+        ).unwrap();
+        graphics::draw(ctx, &circle, DrawParam::default().dest(location)).unwrap();
+    }
+
+    let outline = graphics::Mesh::new_rectangle(
+        ctx,
+        graphics::DrawMode::stroke(0.05),
+        Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0, 1.0),
+        *COLOR_FIXTURE_OUTLINE,
+    ).unwrap();
+    graphics::draw(ctx, &outline, DrawParam::default().dest(location)).unwrap();
+}
+
 impl EventHandler for Visualizer {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         if !ggez::timer::check_update_time(ctx, 30) {
             return Ok(())
+        }
+
+        for (_name, fixture) in self.installation.fixtures_mut() {
+            for (name, mut element) in fixture.elements.iter_mut() {
+                element.set_color(self.color[0], self.color[1], self.color[2]);
+                element.set_intensity(255.0);
+            }
         }
 
         let red = (self.color[0] * 255.0) as u8;
@@ -97,17 +144,7 @@ impl EventHandler for Visualizer {
         graphics::clear(ctx, graphics::BLACK);
 
         for (_name, fixture) in self.installation.fixtures() {
-            let circle = graphics::Mesh::new_circle(
-                ctx,
-                graphics::DrawMode::fill(),
-                Point2::new(0.0, 0.0),
-                1.0,
-                0.01,
-                graphics::WHITE,
-            ).unwrap();
-            let location = fixture.pos;
-            // dbg!(location);
-            graphics::draw(ctx, &circle, DrawParam::default().dest(location)).unwrap();
+            draw_fixture(fixture, ctx);
         }
 
         self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.color);

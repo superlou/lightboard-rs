@@ -1,3 +1,6 @@
+#[macro_use(lazy_static)]
+extern crate lazy_static;
+
 mod dmx_control;
 mod gui;
 mod imgui_wrapper;
