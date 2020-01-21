@@ -1,8 +1,6 @@
 use std::time::Instant;
-use imgui::{TextureId, im_str};
+use imgui::{im_str};
 use imgui_gfx_renderer::{Shaders, Renderer};
-use gfx_core::{format, texture};
-use gfx_core::factory::Factory;
 use gfx_core::memory::Typed;
 use gfx_core::handle::RenderTargetView;
 use gfx_device_gl;

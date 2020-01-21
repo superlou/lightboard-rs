@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::graphics::{DrawParam, Rect, set_screen_coordinates};
 use ggez::conf::WindowMode;
@@ -150,7 +149,7 @@ impl EventHandler for Visualizer {
         }
 
         for (_name, fixture) in self.installation.fixtures_mut() {
-            for (name, mut element) in fixture.elements.iter_mut() {
+            for (_name, element) in fixture.elements.iter_mut() {
                 element.set_color(self.color[0], self.color[1], self.color[2]);
                 element.set_intensity(255.0);
             }

@@ -68,6 +68,9 @@ impl From<ElementConfig> for Element {
             "rgbiu" => ElementType::Rgbiu,
             "rgbi" => ElementType::Rgbi,
             "u" => ElementType::Uv,
+            "smoke" => ElementType::Smoke,
+            "gobo" => ElementType::Gobo,
+            "actuator" => ElementType::Actuator,
             _ => ElementType::Unknown,
         };
 
