@@ -74,7 +74,7 @@ impl ImGuiWrapper {
 
         let ui = self.imgui.frame();
 
-        ui.window(im_str!("Hello world"))
+        imgui::Window::new(im_str!("Hello world"))
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
           .position([100.0, 100.0], imgui::Condition::FirstUseEver)
           .build(&ui, || {
