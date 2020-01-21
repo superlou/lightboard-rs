@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::graphics::{DrawParam, Rect, set_screen_coordinates};
 use ggez::conf::WindowMode;
@@ -40,6 +41,7 @@ struct Visualizer {
     view: Rect,
     width: f32,
     height: f32,
+    selected: Vec<String>,
 }
 
 fn make_view_rect(installation: (f32, f32), window: (f32, f32)) -> Rect {
@@ -77,6 +79,7 @@ impl Visualizer {
             view: view_rect,
             width: INITIAL_WIDTH,
             height: INITIAL_HEIGHT,
+            selected: vec![],
         }
     }
 }
@@ -84,9 +87,10 @@ impl Visualizer {
 lazy_static! {
     static ref COLOR_FIXTURE_BG: graphics::Color = graphics::Color::new(0.1, 0.1, 0.1, 1.0);
     static ref COLOR_FIXTURE_OUTLINE: graphics::Color = graphics::Color::new(0.4, 0.4, 0.4, 1.0);
+    static ref COLOR_FIXTURE_OUTLINE_SELECTED: graphics::Color = graphics::Color::new(1.0, 1.0, 1.0, 1.0);
 }
 
-fn draw_fixture(fixture: &Fixture, ctx: &mut Context) {
+fn draw_fixture(fixture: &Fixture, ctx: &mut Context, is_selected: bool) {
     let location = fixture.pos;
 
     let background = graphics::Mesh::new_rectangle(
@@ -113,11 +117,30 @@ fn draw_fixture(fixture: &Fixture, ctx: &mut Context) {
 
     let outline = graphics::Mesh::new_rectangle(
         ctx,
-        graphics::DrawMode::stroke(0.05),
+        graphics::DrawMode::stroke(0.04),
         Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0, 1.0),
         *COLOR_FIXTURE_OUTLINE,
     ).unwrap();
     graphics::draw(ctx, &outline, DrawParam::default().dest(location)).unwrap();
+
+    if is_selected {
+        let outline = graphics::Mesh::new_rectangle(
+            ctx,
+            graphics::DrawMode::stroke(0.04),
+            Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0, 1.0),
+            *COLOR_FIXTURE_OUTLINE_SELECTED,
+        ).unwrap();
+        graphics::draw(ctx, &outline, DrawParam::default().dest(location)).unwrap();
+    }
+}
+
+impl Visualizer {
+    fn screen_coordinates_for(&self, x: f32, y: f32) -> (f32, f32) {
+        let (width, height) = (self.width, self.height);
+        let screen_x = x / width * self.view.w + self.view.x;
+        let screen_y = y / height * self.view.h + self.view.y;
+        (screen_x, screen_y)
+    }
 }
 
 impl EventHandler for Visualizer {
@@ -143,8 +166,9 @@ impl EventHandler for Visualizer {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, graphics::BLACK);
 
-        for (_name, fixture) in self.installation.fixtures() {
-            draw_fixture(fixture, ctx);
+        for (name, fixture) in self.installation.fixtures() {
+            let is_selected = self.selected.as_slice().contains(name);
+            draw_fixture(fixture, ctx, is_selected);
         }
 
         self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.color);
@@ -152,9 +176,6 @@ impl EventHandler for Visualizer {
     }
 
     fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _dx: f32, _dy: f32) {
-        let (width, height) = (self.width, self.height);
-        let _screen_x = x / width * self.view.w + self.view.x;
-        let _screen_y = y / height * self.view.h + self.view.y;
         self.imgui_wrapper.update_mouse_pos(x, y);
     }
 
@@ -164,12 +185,30 @@ impl EventHandler for Visualizer {
         set_screen_coordinates(ctx, view_rect).unwrap();
     }
 
-    fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, _x: f32, _y: f32) {
+    fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
         self.imgui_wrapper.update_mouse_down((
             button == MouseButton::Left,
             button == MouseButton::Right,
             button == MouseButton::Middle,
         ));
+
+        if self.imgui_wrapper.want_capture_mouse() {
+            return;
+        }
+
+        // todo This is really gross. There needs to be a rendered installation
+        // that knows about rendering info.
+        let (screen_x, screen_y) = self.screen_coordinates_for(x, y);
+
+        self.selected = self.installation.fixtures().iter().filter_map(|(name, fixture)| {
+            let bounds = Rect::new(fixture.pos.x, fixture.pos.y,
+                                   fixture.elements.len() as f32 * 1.0, 1.0);
+            if bounds.contains(Point2::new(screen_x, screen_y)) {
+                Some(name.clone())
+            } else {
+                None
+            }
+        }).collect();
     }
 
     fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, _x: f32, _y: f32) {

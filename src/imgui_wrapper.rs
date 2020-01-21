@@ -57,6 +57,10 @@ impl ImGuiWrapper {
       }
     }
 
+    pub fn want_capture_mouse(&self) -> bool {
+         self.imgui.io().want_capture_mouse
+    }
+
     pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32, color: &mut [f32; 4]) {
         self.update_mouse();
 

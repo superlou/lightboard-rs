@@ -21,6 +21,7 @@ pub struct Element {
     intensity: f32,
 }
 
+#[derive(Debug)]
 pub struct Fixture {
     pub elements: HashMap<String, Element>,
     pub pos: Point2<f32>,
