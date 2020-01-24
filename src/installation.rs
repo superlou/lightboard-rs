@@ -127,6 +127,20 @@ impl Installation {
     pub fn size(&self) -> &(f32, f32) {
         &self.size
     }
+
+    pub fn zero(&mut self) {
+        for (_name, fixture) in self.fixtures.iter_mut() {
+            for (_name, element) in fixture.elements.iter_mut() {
+                match element.kind {
+                    ElementType::Rgbi | ElementType::Rgbiu => {
+                        element.set_color(0.0, 0.0, 0.0);
+                        element.set_intensity(0.0);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
 }
 
 impl Element {

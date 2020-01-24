@@ -1,2 +1,9 @@
+[scenes.blackout]
+fixtures.1.elements.0 = 0x000000
+fixtures.2.elements.0 = 0x000000
+
 [scenes.a]
-fixture.elements.1 = 0x4300ff
+fixtures.1.elements.0 = 0x4300ff
+
+[scenes.b]
+fixtures.2.elements.0 = 0xffffff

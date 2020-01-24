@@ -8,11 +8,12 @@ use std::sync::mpsc;
 use crate::imgui_wrapper::ImGuiWrapper;
 use crate::installation::Installation;
 use crate::installation::Fixture;
+use crate::scene::SceneManager;
 
 const INITIAL_WIDTH: f32 = 800.0;
 const INITIAL_HEIGHT: f32 = 600.0;
 
-pub fn run_gui(installation: Installation, dmx_send: mpsc::Sender<[u8; 8]>) {
+pub fn run_gui(installation: Installation, scene_manager: SceneManager, dmx_send: mpsc::Sender<[u8; 8]>) {
     let (mut ctx, mut event_loop) = ContextBuilder::new("my_gui", "Author")
         .window_mode(WindowMode {
             width: INITIAL_WIDTH,
@@ -23,7 +24,8 @@ pub fn run_gui(installation: Installation, dmx_send: mpsc::Sender<[u8; 8]>) {
         .build()
         .expect("Could not create ggez context!");
 
-    let mut gui = Visualizer::new(&mut ctx, 1.0, installation, dmx_send);
+    let mut gui = Visualizer::new(&mut ctx, 1.0, installation, scene_manager,
+                                  dmx_send);
 
     match event::run(&mut ctx, &mut event_loop, &mut gui) {
         Ok(_) => println!("Exited GUI"),
@@ -35,6 +37,7 @@ struct Visualizer {
     imgui_wrapper: ImGuiWrapper,
     hidpi_factor: f32,
     installation: Installation,
+    scene_manager: SceneManager,
     dmx_send: mpsc::Sender<[u8; 8]>,
     color: [f32; 4],
     view: Rect,
@@ -62,7 +65,8 @@ fn make_view_rect(installation: (f32, f32), window: (f32, f32)) -> Rect {
 }
 
 impl Visualizer {
-    pub fn new(ctx: &mut Context, hidpi_factor: f32, installation: Installation,
+    pub fn new(ctx: &mut Context, hidpi_factor: f32,
+               installation: Installation, scene_manager: SceneManager,
                dmx_send: mpsc::Sender<[u8; 8]>) -> Visualizer
     {
         let view_rect = make_view_rect((installation.size().0, installation.size().1),
@@ -73,6 +77,7 @@ impl Visualizer {
             imgui_wrapper: ImGuiWrapper::new(ctx),
             hidpi_factor: hidpi_factor,
             installation: installation,
+            scene_manager: scene_manager,
             dmx_send: dmx_send,
             color: [0.0, 0.0, 0.0, 0.0],
             view: view_rect,
@@ -101,7 +106,10 @@ fn draw_fixture(fixture: &Fixture, ctx: &mut Context, is_selected: bool) {
     graphics::draw(ctx, &background, DrawParam::default().dest(location)).unwrap();
 
     for (i, (_name, element)) in fixture.elements.iter().enumerate() {
-        let color = graphics::Color::new(element.color().0, element.color().1, element.color().2, 1.0);
+        let color = graphics::Color::new(element.color().0,
+                                         element.color().1,
+                                         element.color().2,
+                                         1.0);
 
         let circle = graphics::Mesh::new_circle(
             ctx,
@@ -148,12 +156,7 @@ impl EventHandler for Visualizer {
             return Ok(())
         }
 
-        for (_name, fixture) in self.installation.fixtures_mut() {
-            for (_name, element) in fixture.elements.iter_mut() {
-                element.set_color(self.color[0], self.color[1], self.color[2]);
-                element.set_intensity(255.0);
-            }
-        }
+        self.scene_manager.apply_to(&mut self.installation);
 
         let red = (self.color[0] * 255.0) as u8;
         let green = (self.color[1] * 255.0) as u8;
@@ -170,7 +173,7 @@ impl EventHandler for Visualizer {
             draw_fixture(fixture, ctx, is_selected);
         }
 
-        self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.color);
+        self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.scene_manager);
         graphics::present(ctx)
     }
 

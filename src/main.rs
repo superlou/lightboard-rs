@@ -5,11 +5,13 @@ mod dmx_control;
 mod gui;
 mod imgui_wrapper;
 mod installation;
+mod scene;
 
 use std::{thread};
 use std::sync::mpsc;
 
 use installation::Installation;
+use scene::SceneManager;
 
 fn main() {
     println!("Started");
@@ -17,18 +19,9 @@ fn main() {
     let (send, recv) = mpsc::channel();
 
     let installation = Installation::new("installation.toml");
+    let scene_manager = SceneManager::new("scenes.toml");
 
     thread::spawn(move || { dmx_control::update(recv) });
 
-    gui::run_gui(installation, send);
-
-    // loop {
-    //     let mut s = String::new();
-    //     stdin().read_line(&mut s);
-    //     let value = s.trim().parse().unwrap();
-    //     match send.send(value) {
-    //         Ok(_) => {},
-    //         Err(_) => println!("Unable to send"),
-    //     };
-    // }
+    gui::run_gui(installation, scene_manager, send);
 }

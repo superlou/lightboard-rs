@@ -1,10 +1,11 @@
 use std::time::Instant;
-use imgui::{im_str};
+use imgui::{im_str, ImString};
 use imgui_gfx_renderer::{Shaders, Renderer};
 use gfx_core::memory::Typed;
 use gfx_core::handle::RenderTargetView;
 use gfx_device_gl;
 use ggez::{graphics, Context};
+use crate::scene::SceneManager;
 
 #[derive(Copy, Clone, PartialEq, Debug, Default)]
 struct MouseState {
@@ -59,7 +60,7 @@ impl ImGuiWrapper {
          self.imgui.io().want_capture_mouse
     }
 
-    pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32, color: &mut [f32; 4]) {
+    pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32, scene_manager: &mut SceneManager) {
         self.update_mouse();
 
         let now = Instant::now();
@@ -74,26 +75,17 @@ impl ImGuiWrapper {
 
         let ui = self.imgui.frame();
 
-        imgui::Window::new(im_str!("Hello world"))
+        imgui::Window::new(im_str!("Scene Manager"))
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
           .position([100.0, 100.0], imgui::Condition::FirstUseEver)
           .build(&ui, || {
-            ui.text(im_str!("Hello world!"));
-            ui.text(im_str!("こんにちは世界！"));
-            ui.text(im_str!("This...is...imgui-rs!"));
-            ui.separator();
-            let mouse_pos = ui.io().mouse_pos;
-            ui.text(im_str!(
-              "Mouse Position: ({:.1},{:.1})",
-              mouse_pos[0],
-              mouse_pos[1]
-            ));
-
-            if ui.small_button(im_str!("small button")) {
-              println!("Small button clicked");
-            }
-
-            imgui::ColorPicker::new(im_str!("My Color"), color).build(&ui);
+              for (name, scene) in scene_manager.scenes.iter_mut() {
+                  ui.drag_float(&ImString::new(name), &mut scene.strength)
+                    .min(0.0)
+                    .max(1.0)
+                    .speed(0.01)
+                    .build();
+              }
           });
 
         let (factory, _, encoder, _, render_target) = graphics::gfx_objects(ctx);
