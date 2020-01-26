@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fs::read_to_string;
-use toml::from_str;
 use toml::value::Value;
 use serde::Deserialize;
 use crate::installation::Installation;
@@ -107,8 +106,6 @@ impl Scene {
                     if r > 1.0 { r = 1.0 }
                     if g > 1.0 { g = 1.0 }
                     if b > 1.0 { b = 1.0 }
-
-                    println!("{}, {}, {}", r, g, b);
 
                     element.set_color(r, g, b);
                 },

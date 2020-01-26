@@ -6,6 +6,7 @@ mod gui;
 mod imgui_wrapper;
 mod installation;
 mod scene;
+mod hitbox;
 
 use std::{thread};
 use std::sync::mpsc;
