@@ -1,5 +1,5 @@
 use ggez::{graphics, Context, ContextBuilder, GameResult};
-use ggez::graphics::{DrawParam, Rect, set_screen_coordinates};
+use ggez::graphics::{DrawParam, Rect, Text, set_screen_coordinates};
 use ggez::conf::WindowMode;
 use ggez::event::{MouseButton, KeyCode, KeyMods};
 use ggez::event::{self, EventHandler};
@@ -41,29 +41,10 @@ struct Visualizer {
     scene_manager: SceneManager,
     dmx_send: mpsc::Sender<[u8; 8]>,
     color: [f32; 4],
-    view: Rect,
-    width: f32,
-    height: f32,
     selected: Vec<String>,
     hitbox_manager: HitboxManager,
-}
-
-fn make_view_rect(installation: (f32, f32), window: (f32, f32)) -> Rect {
-    let install_aspect_ratio = &installation.1 / &installation.0;
-    let window_aspect_ratio = window.1 / window.0;
-
-    let width;
-    let height;
-
-    if window_aspect_ratio < install_aspect_ratio {
-        height = installation.1;
-        width = height / window_aspect_ratio;
-    } else {
-        width = installation.0;
-        height = width * window_aspect_ratio;
-    }
-
-    Rect::new(0.0, height, width, -height)
+    installation_view_origin: Point2<f32>,
+    installation_view_scale: f32,
 }
 
 impl Visualizer {
@@ -71,10 +52,6 @@ impl Visualizer {
                installation: Installation, scene_manager: SceneManager,
                dmx_send: mpsc::Sender<[u8; 8]>) -> Self
     {
-        let view_rect = make_view_rect((INITIAL_WIDTH, INITIAL_HEIGHT),
-                                       (INITIAL_WIDTH, INITIAL_HEIGHT));
-        set_screen_coordinates(ctx, view_rect).unwrap();
-
         let mut visualizer = Self {
             imgui_wrapper: ImGuiWrapper::new(ctx),
             hidpi_factor: hidpi_factor,
@@ -82,32 +59,26 @@ impl Visualizer {
             scene_manager: scene_manager,
             dmx_send: dmx_send,
             color: [0.0, 0.0, 0.0, 0.0],
-            view: view_rect,
-            width: INITIAL_WIDTH,
-            height: INITIAL_HEIGHT,
             selected: vec![],
             hitbox_manager: HitboxManager::new(),
+            installation_view_origin: Point2::new(10.0, 10.0),
+            installation_view_scale: 40.0,
         };
 
-        visualizer.update_hitboxes(50.0);
+        visualizer.update_hitboxes();
 
         visualizer
     }
 
-    fn screen_coordinates_for(&self, x: f32, y: f32) -> (f32, f32) {
-        let (width, height) = (self.width, self.height);
-        let screen_x = x / width * self.view.w + self.view.x;
-        let screen_y = y / height * self.view.h + self.view.y;
-        (screen_x, screen_y)
-    }
-
-    fn update_hitboxes(&mut self, scale: f32) {
+    fn update_hitboxes(&mut self) {
+        let origin = self.installation_view_origin;
+        let scale = self.installation_view_scale;
         self.hitbox_manager.clear();
 
         for (name, fixture) in self.installation.fixtures() {
             let location = fixture.pos;
-            let rect = Rect::new(location.x * scale,
-                                 location.y * scale,
+            let rect = Rect::new(location.x * scale + origin.coords.x,
+                                 location.y * scale + origin.coords.y,
                                  fixture.elements.len() as f32 * 1.0 * scale,
                                  1.0 * scale);
             self.hitbox_manager.add(rect, name);
@@ -121,18 +92,20 @@ lazy_static! {
     static ref COLOR_FIXTURE_OUTLINE_SELECTED: graphics::Color = graphics::Color::new(1.0, 1.0, 1.0, 1.0);
 }
 
-fn render_installation(ctx: &mut Context, installation: &Installation, selected: &Vec<String>) {
-    let (_x, _y) = (0.0, 0.0);
-    let scale = 50.0;
-
+fn render_installation(ctx: &mut Context, installation: &Installation, selected: &Vec<String>,
+                       origin: &Point2<f32>, scale: f32)
+{
     for (name, fixture) in installation.fixtures() {
         let is_selected = selected.as_slice().contains(name);
-        draw_fixture(ctx, fixture, is_selected, scale);
+        draw_fixture(ctx, fixture, name, is_selected, &origin, scale);
     }
 }
 
-fn draw_fixture(ctx: &mut Context, fixture: &Fixture, is_selected: bool, scale: f32) {
+fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: bool,
+                origin: &Point2<f32>, scale: f32)
+{
     let location = fixture.pos;
+    let origin = origin.coords;
 
     let background = graphics::Mesh::new_rectangle(
         ctx,
@@ -140,7 +113,7 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, is_selected: bool, scale: 
         Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0 * scale, 1.0 * scale),
         *COLOR_FIXTURE_BG,
     ).unwrap();
-    graphics::draw(ctx, &background, DrawParam::default().dest(location * scale)).unwrap();
+    graphics::draw(ctx, &background, DrawParam::default().dest(location * scale + origin)).unwrap();
 
     for (i, (_name, element)) in fixture.elements.iter().enumerate() {
         let color = graphics::Color::new(element.color().0,
@@ -156,7 +129,7 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, is_selected: bool, scale: 
             0.001,
             color,
         ).unwrap();
-        graphics::draw(ctx, &circle, DrawParam::default().dest(location * scale)).unwrap();
+        graphics::draw(ctx, &circle, DrawParam::default().dest(location * scale + origin)).unwrap();
     }
 
     let outline = graphics::Mesh::new_rectangle(
@@ -165,7 +138,7 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, is_selected: bool, scale: 
         Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0 * scale, 1.0 * scale),
         *COLOR_FIXTURE_OUTLINE,
     ).unwrap();
-    graphics::draw(ctx, &outline, DrawParam::default().dest(location * scale)).unwrap();
+    graphics::draw(ctx, &outline, DrawParam::default().dest(location * scale + origin)).unwrap();
 
     if is_selected {
         let outline = graphics::Mesh::new_rectangle(
@@ -174,8 +147,11 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, is_selected: bool, scale: 
             Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0 * scale, 1.0 * scale),
             *COLOR_FIXTURE_OUTLINE_SELECTED,
         ).unwrap();
-        graphics::draw(ctx, &outline, DrawParam::default().dest(location * scale)).unwrap();
+        graphics::draw(ctx, &outline, DrawParam::default().dest(location * scale + origin)).unwrap();
     }
+
+    let label = Text::new(name);
+    graphics::draw(ctx, &label, (location * scale + origin, graphics::WHITE)).unwrap();
 }
 
 impl EventHandler for Visualizer {
@@ -195,7 +171,8 @@ impl EventHandler for Visualizer {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, graphics::BLACK);
-        render_installation(ctx, &self.installation, &self.selected);
+        render_installation(ctx, &self.installation, &self.selected,
+                            &self.installation_view_origin, self.installation_view_scale);
         self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.scene_manager);
         graphics::present(ctx)
     }
@@ -205,11 +182,8 @@ impl EventHandler for Visualizer {
     }
 
     fn resize_event(&mut self, ctx: &mut Context, width: f32, height: f32) {
-        let view_rect = make_view_rect((width, height), (width, height));
-        self.view = view_rect;
-        self.width = width;
-        self.height = height;
-        self.update_hitboxes(50.0);
+        let view_rect = Rect::new(0.0, 0.0, width, height);
+        self.update_hitboxes();
         set_screen_coordinates(ctx, view_rect).unwrap();
     }
 
@@ -224,8 +198,7 @@ impl EventHandler for Visualizer {
             return;
         }
 
-        let (screen_x, screen_y) = self.screen_coordinates_for(x, y);
-        let point = Point2::new(screen_x, screen_y);
+        let point = Point2::new(x, y);
         self.selected = self.hitbox_manager.targets_at(point);
     }
 
