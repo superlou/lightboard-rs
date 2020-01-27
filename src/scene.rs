@@ -6,11 +6,12 @@ use crate::installation::Installation;
 
 #[derive(Debug)]
 pub struct SceneManager {
-    pub scenes: HashMap<String, Scene>,
+    pub scenes: Vec<Scene>,
 }
 
 #[derive(Debug)]
 pub struct Scene {
+    pub name: String,
     pub strength: f32,
     pub scene_elements: Vec<SceneElement>,
 }
@@ -24,11 +25,12 @@ pub struct SceneElement {
 
 #[derive(Deserialize, Debug)]
 struct SceneManagerConfig {
-    scenes: HashMap<String, SceneConfig>,
+    scenes: Vec<SceneConfig>,
 }
 
 #[derive(Deserialize, Debug)]
 struct SceneConfig {
+    name: String,
     fixtures: HashMap<String, FixtureConfig>,
 }
 
@@ -48,7 +50,7 @@ impl SceneManager {
 
         dbg!(&config);
 
-        let scenes = config.scenes.into_iter().map(|(name, scene_config)| {
+        let scenes = config.scenes.into_iter().map(|scene_config| {
             let mut scene_elements = vec![];
 
             for (fixture_name, fixture) in scene_config.fixtures {
@@ -61,7 +63,11 @@ impl SceneManager {
                 }
             }
 
-            (name, Scene { strength: 0.0, scene_elements: scene_elements})
+            Scene {
+                name: scene_config.name.to_owned(),
+                strength: 0.0,
+                scene_elements: scene_elements
+            }
         }).collect();
 
         dbg!(&scenes);
@@ -74,7 +80,7 @@ impl SceneManager {
     pub fn apply_to(&self, installation: &mut Installation) {
         installation.zero();
 
-        for (_name, scene) in self.scenes.iter() {
+        for scene in self.scenes.iter() {
             scene.apply_to(installation);
         }
     }

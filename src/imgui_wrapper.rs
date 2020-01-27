@@ -79,8 +79,8 @@ impl ImGuiWrapper {
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
           .position([100.0, 100.0], imgui::Condition::FirstUseEver)
           .build(&ui, || {
-              for (name, scene) in scene_manager.scenes.iter_mut() {
-                  ui.drag_float(&ImString::new(name), &mut scene.strength)
+              for scene in scene_manager.scenes.iter_mut() {
+                  ui.drag_float(&ImString::new(scene.name.clone()), &mut scene.strength)
                     .min(0.0)
                     .max(1.0)
                     .speed(0.01)

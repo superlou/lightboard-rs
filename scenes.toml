@@ -1,5 +1,7 @@
-[scenes.a]
+[[scenes]]
+name = "A"
 fixtures.1.elements.0 = 0x4300ff
 
-[scenes.b]
+[[scenes]]
+name = "B"
 fixtures.2.elements.0 = 0xffffff
