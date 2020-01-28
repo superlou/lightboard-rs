@@ -5,3 +5,7 @@ fixtures.1.elements.0 = 0x4300ff
 [[scenes]]
 name = "B"
 fixtures.2.elements.0 = 0xffffff
+
+[[scenes]]
+name = "C"
+fixtures.1.elements.0 = 0xff3000

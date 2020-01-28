@@ -48,8 +48,6 @@ impl SceneManager {
     pub fn new(config_file: &str) -> Self {
         let config: SceneManagerConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
 
-        dbg!(&config);
-
         let scenes = config.scenes.into_iter().map(|scene_config| {
             let mut scene_elements = vec![];
 
@@ -69,8 +67,6 @@ impl SceneManager {
                 scene_elements: scene_elements
             }
         }).collect();
-
-        dbg!(&scenes);
 
         Self {
             scenes: scenes,

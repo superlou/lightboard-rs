@@ -5,6 +5,7 @@ mod dmx_control;
 mod gui;
 mod imgui_wrapper;
 mod installation;
+mod fixture;
 mod scene;
 mod hitbox;
 

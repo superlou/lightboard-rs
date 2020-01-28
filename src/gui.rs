@@ -7,14 +7,16 @@ use ggez::nalgebra::Point2;
 use std::sync::mpsc;
 use crate::imgui_wrapper::ImGuiWrapper;
 use crate::installation::Installation;
-use crate::installation::Fixture;
+use crate::fixture::Fixture;
 use crate::scene::SceneManager;
 use crate::hitbox::HitboxManager;
 
 const INITIAL_WIDTH: f32 = 800.0;
 const INITIAL_HEIGHT: f32 = 600.0;
 
-pub fn run_gui(installation: Installation, scene_manager: SceneManager, dmx_send: mpsc::Sender<[u8; 8]>) {
+pub fn run_gui(installation: Installation, scene_manager: SceneManager,
+               dmx_send: mpsc::Sender<Vec<u8>>)
+{
     let (mut ctx, mut event_loop) = ContextBuilder::new("my_gui", "Author")
         .window_mode(WindowMode {
             width: INITIAL_WIDTH,
@@ -25,8 +27,7 @@ pub fn run_gui(installation: Installation, scene_manager: SceneManager, dmx_send
         .build()
         .expect("Could not create ggez context!");
 
-    let mut gui = Visualizer::new(&mut ctx, 1.0, installation, scene_manager,
-                                  dmx_send);
+    let mut gui = Visualizer::new(&mut ctx, 1.0, installation, scene_manager, dmx_send);
 
     match event::run(&mut ctx, &mut event_loop, &mut gui) {
         Ok(_) => println!("Exited GUI"),
@@ -39,7 +40,7 @@ struct Visualizer {
     hidpi_factor: f32,
     installation: Installation,
     scene_manager: SceneManager,
-    dmx_send: mpsc::Sender<[u8; 8]>,
+    dmx_send: mpsc::Sender<Vec<u8>>,
     color: [f32; 4],
     selected: Vec<String>,
     hitbox_manager: HitboxManager,
@@ -50,7 +51,7 @@ struct Visualizer {
 impl Visualizer {
     pub fn new(ctx: &mut Context, hidpi_factor: f32,
                installation: Installation, scene_manager: SceneManager,
-               dmx_send: mpsc::Sender<[u8; 8]>) -> Self
+               dmx_send: mpsc::Sender<Vec<u8>>) -> Self
     {
         let mut visualizer = Self {
             imgui_wrapper: ImGuiWrapper::new(ctx),
@@ -162,10 +163,8 @@ impl EventHandler for Visualizer {
 
         self.scene_manager.apply_to(&mut self.installation);
 
-        let red = (self.color[0] * 255.0) as u8;
-        let green = (self.color[1] * 255.0) as u8;
-        let blue = (self.color[2] * 255.0) as u8;
-        self.dmx_send.send([0, 0, 0, 255, red, green, blue, 0]).unwrap();
+        let chain = self.installation.build_dmx_chain();
+        self.dmx_send.send(chain).unwrap();
         Ok(())
     }
 
