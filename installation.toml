@@ -13,13 +13,7 @@ mode = "0"
 pos = [0, 5]
 
 [fixtures.3]
-kind = "cheap_led_par_light"
+kind = "elation_colour_chorus_24"
 channel = 17
-mode = "1"
+mode = "18"
 pos = [7, 5]
-
-[fixtures.4]
-kind = "cheap_led_par_light"
-channel = 25
-mode = "0"
-pos = [10, 10]
