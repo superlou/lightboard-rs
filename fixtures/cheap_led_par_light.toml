@@ -1,4 +1,4 @@
 [[modes]]
 name = "0"
 num_channels = 8
-elements.0 = {kind="rgbiu", i=4, r=5, g=6, b=7, uv=8}
+elements.1 = {kind="rgbiu", i=4, r=5, g=6, b=7, uv=8}

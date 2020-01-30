@@ -1,11 +1,14 @@
 [[scenes]]
 name = "A"
-fixtures.1.elements.0 = 0x4300ff
+fixtures.1.elements.1 = 0x4300ff
 
 [[scenes]]
 name = "B"
-fixtures.2.elements.0 = 0xffffff
+fixtures.2.elements.1 = 0xffffff
 
 [[scenes]]
 name = "C"
-fixtures.1.elements.0 = 0xff3000
+fixtures.1.elements.1 = 0xff3000
+
+[groups.1]
+elements = ["1:1", "3:1", "3:2", "3:3", "3:4"]

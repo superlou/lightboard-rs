@@ -7,6 +7,13 @@ use crate::installation::Installation;
 #[derive(Debug)]
 pub struct SceneManager {
     pub scenes: Vec<Scene>,
+    pub groups: HashMap<String, Vec<GroupElement>>,
+}
+
+#[derive(Debug)]
+pub struct GroupElement {
+    fixture: String,
+    element: String,
 }
 
 #[derive(Debug)]
@@ -26,6 +33,7 @@ pub struct SceneElement {
 #[derive(Deserialize, Debug)]
 struct SceneManagerConfig {
     scenes: Vec<SceneConfig>,
+    groups: HashMap<String, GroupConfig>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -42,6 +50,11 @@ struct FixtureConfig {
 #[derive(Deserialize, Debug)]
 struct ElementConfig {
 
+}
+
+#[derive(Deserialize, Debug)]
+struct GroupConfig {
+    elements: Vec<String>,
 }
 
 impl SceneManager {
@@ -68,8 +81,21 @@ impl SceneManager {
             }
         }).collect();
 
+        let groups = config.groups.into_iter().map(|(name, config)| {
+            let group_elements = config.elements.iter().map(|s| {
+                let parts: Vec<&str> = s.split(":").collect();
+                GroupElement {
+                    fixture: parts[0].to_owned(),
+                    element: parts[1].to_owned(),
+                }
+            }).collect();
+
+            (name, group_elements)
+        }).collect();
+
         Self {
             scenes: scenes,
+            groups: groups,
         }
     }
 

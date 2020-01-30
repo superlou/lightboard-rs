@@ -1,7 +1,7 @@
 [[modes]]
 name = "18"
 num_channels = 17
-elements.0 = {kind="rgbi", r=2, g=3, b=4, i=5}
-elements.1 = {kind="rgbi", r=6, g=7, b=8, i=9}
-elements.2 = {kind="rgbi", r=10, g=11, b=12, i=13}
-elements.3 = {kind="rgbi", r=14, g=15, b=16, i=17}
+elements.1 = {kind="rgbi", r=2, g=3, b=4, i=5}
+elements.2 = {kind="rgbi", r=6, g=7, b=8, i=9}
+elements.3 = {kind="rgbi", r=10, g=11, b=12, i=13}
+elements.4 = {kind="rgbi", r=14, g=15, b=16, i=17}
