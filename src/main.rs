@@ -8,6 +8,7 @@ mod installation;
 mod fixture;
 mod scene;
 mod hitbox;
+mod pattern;
 
 use std::{thread};
 use std::sync::mpsc;
