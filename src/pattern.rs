@@ -1,10 +1,20 @@
-use rlua::{Lua, Function, Table};
 use std::fs::read_to_string;
+use std::fmt;
+use rlua::{Lua, Function, Table};
 
 pub struct Pattern {
     lua: Lua,
     group: String,
     options: Vec<PatternOption>
+}
+
+impl fmt::Debug for Pattern {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Pattern")
+            .field("group", &self.group)
+            .field("options", &self.options)
+            .finish()
+    }
 }
 
 #[derive(Debug)]
@@ -51,18 +61,22 @@ impl Pattern {
         }
     }
 
-    pub fn update(&mut self) -> Vec<u32> {
+    pub fn update(&mut self) -> Vec<i32> {
         let mut values = vec![];
 
         self.lua.context(|ctx| {
             let globals = ctx.globals();
             let update: Function = globals.get("update").unwrap();
-            values = update.call::<(), Vec<u32>>(()).unwrap();
+            values = update.call::<(), Vec<i32>>(()).unwrap();
 
             ctx.load("").eval::<()>() // todo Why can't I use Ok(())?
         }).unwrap();
 
         values
+    }
+
+    pub fn group(&self) -> &str {
+        &self.group
     }
 }
 
