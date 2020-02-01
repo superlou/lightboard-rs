@@ -6,6 +6,7 @@ use gfx_core::handle::RenderTargetView;
 use gfx_device_gl;
 use ggez::{graphics, Context};
 use crate::scene::SceneManager;
+use crate::gui::DmxStatus;
 
 #[derive(Copy, Clone, PartialEq, Debug, Default)]
 struct MouseState {
@@ -60,7 +61,9 @@ impl ImGuiWrapper {
          self.imgui.io().want_capture_mouse
     }
 
-    pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32, scene_manager: &mut SceneManager) {
+    pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32,
+                  scene_manager: &mut SceneManager, dmx_status: &DmxStatus)
+    {
         self.update_mouse();
 
         let now = Instant::now();
@@ -79,13 +82,17 @@ impl ImGuiWrapper {
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
           .position([100.0, 100.0], imgui::Condition::FirstUseEver)
           .build(&ui, || {
-              for scene in scene_manager.scenes.iter_mut() {
-                  ui.drag_float(&ImString::new(scene.name.clone()), &mut scene.strength)
-                    .min(0.0)
-                    .max(1.0)
-                    .speed(0.01)
-                    .build();
-              }
+            if dmx_status != &DmxStatus::Ok {
+              ui.text(im_str!("DMX sending failed!"));
+            }
+
+            for scene in scene_manager.scenes.iter_mut() {
+              ui.drag_float(&ImString::new(scene.name.clone()), &mut scene.strength)
+                .min(0.0)
+                .max(1.0)
+                .speed(0.01)
+                .build();
+            }
           });
 
         let (factory, _, encoder, _, render_target) = graphics::gfx_objects(ctx);

@@ -35,6 +35,13 @@ pub fn run_gui(installation: Installation, scene_manager: SceneManager,
     }
 }
 
+#[derive(PartialEq)]
+pub enum DmxStatus {
+    Ok,
+    Error,
+    Unknown,
+}
+
 struct Visualizer {
     imgui_wrapper: ImGuiWrapper,
     hidpi_factor: f32,
@@ -46,6 +53,7 @@ struct Visualizer {
     hitbox_manager: HitboxManager,
     installation_view_origin: Point2<f32>,
     installation_view_scale: f32,
+    dmx_status: DmxStatus,
 }
 
 impl Visualizer {
@@ -64,6 +72,7 @@ impl Visualizer {
             hitbox_manager: HitboxManager::new(),
             installation_view_origin: Point2::new(10.0, 10.0),
             installation_view_scale: 40.0,
+            dmx_status: DmxStatus::Unknown,
         };
 
         visualizer.update_hitboxes();
@@ -164,7 +173,10 @@ impl EventHandler for Visualizer {
         self.scene_manager.apply_to(&mut self.installation);
 
         let chain = self.installation.build_dmx_chain();
-        self.dmx_send.send(chain).unwrap();
+        self.dmx_status = match self.dmx_send.send(chain) {
+            Ok(_) => DmxStatus::Ok,
+            Err(_) => DmxStatus::Error,
+        };
         Ok(())
     }
 
@@ -172,7 +184,7 @@ impl EventHandler for Visualizer {
         graphics::clear(ctx, graphics::BLACK);
         render_installation(ctx, &self.installation, &self.selected,
                             &self.installation_view_origin, self.installation_view_scale);
-        self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.scene_manager);
+        self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.scene_manager, &self.dmx_status);
         graphics::present(ctx)
     }
 
