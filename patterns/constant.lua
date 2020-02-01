@@ -9,7 +9,7 @@ function setup()
   return options
 end
 
-function update()
+function update(dt)
   values = {}
 
   for i = 1, element_count do

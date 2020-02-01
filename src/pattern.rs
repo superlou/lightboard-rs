@@ -5,7 +5,8 @@ use rlua::{Lua, Function, Table};
 pub struct Pattern {
     lua: Lua,
     group: String,
-    options: Vec<PatternOption>
+    options: Vec<PatternOption>,
+    script_name: String,
 }
 
 impl fmt::Debug for Pattern {
@@ -58,16 +59,26 @@ impl Pattern {
             lua: lua,
             group: group.to_owned(),
             options: options,
+            script_name: script_name.to_owned(),
         }
     }
 
     pub fn update(&mut self) -> Vec<i32> {
         let mut values = vec![];
+        let dt = 1.0 / 30.0;
 
         self.lua.context(|ctx| {
             let globals = ctx.globals();
             let update: Function = globals.get("update").unwrap();
-            values = update.call::<(), Vec<i32>>(()).unwrap();
+
+            values = match update.call::<f32, Vec<i32>>(dt) {
+                Ok(x) => x,
+                Err(e) => {
+                    println!("Lua error in {}:update", self.script_name);
+                    println!("{}", e);
+                    vec![]
+                }
+            };
 
             ctx.load("").eval::<()>() // todo Why can't I use Ok(())?
         }).unwrap();
