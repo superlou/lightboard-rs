@@ -9,6 +9,7 @@ mod fixture;
 mod scene;
 mod hitbox;
 mod pattern;
+mod light;
 
 use std::{thread};
 use std::sync::mpsc;
