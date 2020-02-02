@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::fs::read_to_string;
 use serde::Deserialize;
 use nalgebra::Point2;
-use crate::fixture::{Fixture, Element, ElementType};
+use crate::fixture::{Fixture, Element, ElementKind};
+use crate::light::Color;
 
 pub struct Installation {
     size: (f32, f32),
@@ -48,13 +49,13 @@ struct ElementConfig {
 impl From<ElementConfig> for Element {
     fn from(config: ElementConfig) -> Self {
         let kind = match config.kind.as_str() {
-            "rgbiu" => ElementType::Rgbiu,
-            "rgbi" => ElementType::Rgbi,
-            "u" => ElementType::Uv,
-            "smoke" => ElementType::Smoke,
-            "gobo" => ElementType::Gobo,
-            "actuator" => ElementType::Actuator,
-            _ => ElementType::Unknown,
+            "rgbiu" => ElementKind::Rgbiu{rgb: Color::black(), uv: 1.0},
+            "rgbi" => ElementKind::Rgbi(Color::black()),
+            "u" => ElementKind::Uv(0.0),
+            "smoke" => ElementKind::Smoke,
+            "gobo" => ElementKind::Gobo,
+            "actuator" => ElementKind::Actuator,
+            _ => ElementKind::Unknown,
         };
 
         let mut element = Element::new(kind, (0.0, 0.0, 0.0), 0.0);
@@ -141,9 +142,14 @@ impl Installation {
         for (_name, fixture) in self.fixtures.iter_mut() {
             for (_name, element) in fixture.elements.iter_mut() {
                 match element.kind() {
-                    ElementType::Rgbi | ElementType::Rgbiu => {
-                        element.set_color(0.0, 0.0, 0.0);
-                        element.set_intensity(0.0);
+                    ElementKind::Rgbi(_) => {
+                        element.set_kind(ElementKind::Rgbi(Color::black()));
+                    },
+                    ElementKind::Rgbiu{rgb: _, uv: _} => {
+                        element.set_kind(ElementKind::Rgbiu{
+                            rgb: Color::black(),
+                            uv: 0.0,
+                        });
                     }
                     _ => {}
                 }

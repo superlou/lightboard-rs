@@ -7,7 +7,7 @@ use ggez::nalgebra::Point2;
 use std::sync::mpsc;
 use crate::imgui_wrapper::ImGuiWrapper;
 use crate::installation::Installation;
-use crate::fixture::Fixture;
+use crate::fixture::{Fixture, ElementKind};
 use crate::scene::SceneManager;
 use crate::hitbox::HitboxManager;
 
@@ -126,20 +126,34 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: b
     graphics::draw(ctx, &background, DrawParam::default().dest(location * scale + origin)).unwrap();
 
     for (i, (_name, element)) in fixture.elements.iter().enumerate() {
-        let color = graphics::Color::new(element.color().0,
-                                         element.color().1,
-                                         element.color().2,
-                                         1.0);
+        match element.kind() {
+            ElementKind::Rgbi(color) => {
+                let color = graphics::Color::new(color.r(), color.g(), color.b(), 1.0);
+                let circle = graphics::Mesh::new_circle(
+                    ctx,
+                    graphics::DrawMode::fill(),
+                    Point2::new(i as f32 * 1.0 + 0.5, 0.5) * scale,
+                    0.5 * scale,
+                    0.001,
+                    color,
+                ).unwrap();
+                graphics::draw(ctx, &circle, DrawParam::default().dest(location * scale + origin)).unwrap();
+            },
+            ElementKind::Rgbiu{rgb: color, uv: uv} => {
+                let color = graphics::Color::new(color.r(), color.g(), color.b(), 1.0);
+                let circle = graphics::Mesh::new_circle(
+                    ctx,
+                    graphics::DrawMode::fill(),
+                    Point2::new(i as f32 * 1.0 + 0.5, 0.5) * scale,
+                    0.5 * scale,
+                    0.001,
+                    color,
+                ).unwrap();
+                graphics::draw(ctx, &circle, DrawParam::default().dest(location * scale + origin)).unwrap();
+            }
+            _ => {},
+        }
 
-        let circle = graphics::Mesh::new_circle(
-            ctx,
-            graphics::DrawMode::fill(),
-            Point2::new(i as f32 * 1.0 + 0.5, 0.5) * scale,
-            0.5 * scale,
-            0.001,
-            color,
-        ).unwrap();
-        graphics::draw(ctx, &circle, DrawParam::default().dest(location * scale + origin)).unwrap();
     }
 
     let outline = graphics::Mesh::new_rectangle(

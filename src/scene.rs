@@ -5,6 +5,7 @@ use serde::Deserialize;
 use crate::installation::Installation;
 use crate::pattern::Pattern;
 use crate::light::Color;
+use crate::fixture::ElementKind;
 
 #[derive(Debug)]
 pub struct SceneManager {
@@ -152,7 +153,7 @@ impl SceneManager {
 impl Scene {
     pub fn apply_to(&mut self, installation: &mut Installation,
                     groups: &HashMap<String, Vec<GroupElement>>)
-{
+    {
         let strength = self.strength;
 
         for scene_element in &self.scene_elements {
@@ -162,13 +163,23 @@ impl Scene {
 
             match scene_element.value {
                 Value::Integer(value) => {
-                    element.set_intensity(1.0);
+                    let kind = match element.kind() {
+                        ElementKind::Rgbi(color) => {
+                            let mut effect_color: Color = (value as i32).into();
+                            effect_color.scale(strength);
+                            Some(ElementKind::Rgbi(color.clone() + effect_color))
+                        },
+                        ElementKind::Rgbiu{rgb: color, uv} => {
+                            let mut effect_color: Color = (value as i32).into();
+                            effect_color.scale(strength);
+                            Some(ElementKind::Rgbiu{rgb: color.clone() + effect_color, uv: *uv})
+                        },
+                        _ => { None },
+                    };
 
-                    let mut effect_color: Color = (value as i32).into();
-                    effect_color.scale(strength);
-                    let mut element_color: Color = element.color().into();
-                    element_color = element_color + effect_color;
-                    element.set_color(element_color.r(), element_color.g(), element_color.b());
+                    if let Some(kind) = kind {
+                        element.set_kind(kind);
+                    }
                 },
                 _ => {}
             }
@@ -183,13 +194,23 @@ impl Scene {
                                 .get_mut(&scene_element.fixture).unwrap()
                                 .elements.get_mut(&scene_element.element).unwrap();
 
-                element.set_intensity(1.0);
+                let kind = match element.kind() {
+                    ElementKind::Rgbi(color) => {
+                        let mut effect_color: Color = (*new_value as i32).into();
+                        effect_color.scale(strength);
+                        Some(ElementKind::Rgbi(color.clone() + effect_color))
+                    },
+                    ElementKind::Rgbiu{rgb: color, uv} => {
+                        let mut effect_color: Color = (*new_value as i32).into();
+                        effect_color.scale(strength);
+                        Some(ElementKind::Rgbiu{rgb: color.clone() + effect_color, uv: *uv})
+                    },
+                    _=> { None },
+                };
 
-                let mut effect_color: Color = (*new_value as i32).into();
-                effect_color.scale(strength);
-                let mut element_color: Color = element.color().into();
-                element_color = element_color + effect_color;
-                element.set_color(element_color.r(), element_color.g(), element_color.b());
+                if let Some(kind) = kind {
+                    element.set_kind(kind);
+                }
             }
         }
     }

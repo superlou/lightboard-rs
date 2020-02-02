@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 use ggez::nalgebra::Point2;
+use crate::light::{Color, Intensity};
 
 #[derive(Debug)]
-pub enum ElementType {
-    Rgbiu,
-    Rgbi,
-    Uv,
+pub enum ElementKind {
+    Rgbiu{rgb: Color, uv: Intensity},
+    Rgbi(Color),
+    Uv(Intensity),
     Smoke,
     Actuator,
     Gobo,
@@ -14,39 +15,25 @@ pub enum ElementType {
 
 #[derive(Debug)]
 pub struct Element {
-    kind: ElementType,
-    color: (f32, f32, f32),
-    intensity: f32,
+    kind: ElementKind,
     channels: HashMap<String, u8>,
 }
 
 impl Element {
-    pub fn new(kind: ElementType, color: (f32, f32, f32), intensity: f32) -> Element {
-        Element { kind, color, intensity, channels: HashMap::new() }
+    pub fn new(kind: ElementKind, color: (f32, f32, f32), intensity: f32) -> Element {
+        Element { kind, channels: HashMap::new() }
     }
 
     pub fn add_channel(&mut self, name: &str, index: u8) {
         self.channels.insert(name.to_owned(), index);
     }
 
-    pub fn kind(&self) -> &ElementType {
+    pub fn kind(&self) -> &ElementKind {
         &self.kind
     }
 
-    pub fn color(&self) -> (f32, f32, f32) {
-        self.color
-    }
-
-    pub fn intensity(&self) -> f32 {
-        self.intensity
-    }
-
-    pub fn set_color(&mut self, r: f32, g: f32, b: f32) {
-        self.color = (r, g, b);
-    }
-
-    pub fn set_intensity(&mut self, i: f32) {
-        self.intensity = i;
+    pub fn set_kind(&mut self, kind: ElementKind) {
+        self.kind = kind;
     }
 }
 
@@ -74,22 +61,43 @@ impl Fixture {
     pub fn update_dmx(&mut self) {
         // This only supports basic RGB fixtures right now
         for (_name, element) in self.elements.iter() {
-            match element.kind {
-                ElementType::Rgbiu | ElementType::Rgbiu => {
+            match &element.kind {
+                ElementKind::Rgbi(color) => {
                     if let Some(channel) = element.channels.get("i") {
                         self.dmx_vec[(channel - 1) as usize] = 255;
                     }
 
                     if let Some(channel) = element.channels.get("r") {
-                        self.dmx_vec[(channel - 1) as usize] = (element.color.0 * 255.0) as u8;
+                        self.dmx_vec[(channel - 1) as usize] = (color.r() * 255.0) as u8;
                     }
 
                     if let Some(channel) = element.channels.get("g") {
-                        self.dmx_vec[(channel - 1) as usize] = (element.color.1 * 255.0) as u8;
+                        self.dmx_vec[(channel - 1) as usize] = (color.g() * 255.0) as u8;
                     }
 
                     if let Some(channel) = element.channels.get("b") {
-                        self.dmx_vec[(channel - 1) as usize] = (element.color.2 * 255.0) as u8;
+                        self.dmx_vec[(channel - 1) as usize] = (color.b() * 255.0) as u8;
+                    }
+                },
+                ElementKind::Rgbiu{rgb: color, uv: uv} => {
+                    if let Some(channel) = element.channels.get("i") {
+                        self.dmx_vec[(channel - 1) as usize] = 255;
+                    }
+
+                    if let Some(channel) = element.channels.get("r") {
+                        self.dmx_vec[(channel - 1) as usize] = (color.r() * 255.0) as u8;
+                    }
+
+                    if let Some(channel) = element.channels.get("g") {
+                        self.dmx_vec[(channel - 1) as usize] = (color.g() * 255.0) as u8;
+                    }
+
+                    if let Some(channel) = element.channels.get("b") {
+                        self.dmx_vec[(channel - 1) as usize] = (color.b() * 255.0) as u8;
+                    }
+
+                    if let Some(channel) = element.channels.get("uv") {
+                        self.dmx_vec[(channel - 1) as usize] = (uv * 255.0) as u8;
                     }
                 },
                 _ => {}

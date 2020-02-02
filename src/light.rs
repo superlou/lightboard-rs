@@ -1,10 +1,13 @@
 use std::f32::NAN;
 
+#[derive(Debug, Clone)]
 pub struct Color {
     r: f32,
     g: f32,
     b: f32,
 }
+
+pub type Intensity = f32;
 
 fn clamp(x: f32) -> f32 {
     if x.is_nan() {
@@ -25,6 +28,10 @@ impl Color {
             g: clamp(g),
             b: clamp(b),
         }
+    }
+
+    pub fn black() -> Self {
+        Self {r: 0.0, g: 0.0, b: 0.0}
     }
 
     pub fn r(&self) -> f32 {
