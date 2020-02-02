@@ -4,6 +4,7 @@ use toml::value::Value;
 use serde::Deserialize;
 use crate::installation::Installation;
 use crate::pattern::Pattern;
+use crate::light::Color;
 
 #[derive(Debug)]
 pub struct SceneManager {
@@ -161,23 +162,13 @@ impl Scene {
 
             match scene_element.value {
                 Value::Integer(value) => {
-                    let r = ((value >> 16) & 0xff) as f32 / 255.0;
-                    let g = ((value >> 8) & 0xff) as f32 / 255.0;
-                    let b = (value & 0xff) as f32 / 255.0;
-
                     element.set_intensity(1.0);
 
-                    let (r0, g0, b0) = element.color();
-
-                    let mut r = r * strength + r0;
-                    let mut g = g * strength + g0;
-                    let mut b = b * strength + b0;
-
-                    if r > 1.0 { r = 1.0 }
-                    if g > 1.0 { g = 1.0 }
-                    if b > 1.0 { b = 1.0 }
-
-                    element.set_color(r, g, b);
+                    let mut effect_color: Color = (value as i32).into();
+                    effect_color.scale(strength);
+                    let mut element_color: Color = element.color().into();
+                    element_color = element_color + effect_color;
+                    element.set_color(element_color.r(), element_color.g(), element_color.b());
                 },
                 _ => {}
             }
@@ -192,23 +183,13 @@ impl Scene {
                                 .get_mut(&scene_element.fixture).unwrap()
                                 .elements.get_mut(&scene_element.element).unwrap();
 
-                let r = ((new_value >> 16) & 0xff) as f32 / 255.0;
-                let g = ((new_value >> 8) & 0xff) as f32 / 255.0;
-                let b = (new_value & 0xff) as f32 / 255.0;
-
                 element.set_intensity(1.0);
 
-                let (r0, g0, b0) = element.color();
-
-                let mut r = r * strength + r0;
-                let mut g = g * strength + g0;
-                let mut b = b * strength + b0;
-
-                if r > 1.0 { r = 1.0 }
-                if g > 1.0 { g = 1.0 }
-                if b > 1.0 { b = 1.0 }
-
-                element.set_color(r, g, b);
+                let mut effect_color: Color = (*new_value as i32).into();
+                effect_color.scale(strength);
+                let mut element_color: Color = element.color().into();
+                element_color = element_color + effect_color;
+                element.set_color(element_color.r(), element_color.g(), element_color.b());
             }
         }
     }

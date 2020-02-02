@@ -26,6 +26,24 @@ impl Color {
             b: clamp(b),
         }
     }
+
+    pub fn r(&self) -> f32 {
+        self.r
+    }
+
+    pub fn g(&self) -> f32 {
+        self.g
+    }
+
+    pub fn b(&self) -> f32 {
+        self.b
+    }
+
+    pub fn scale(&mut self, strength: f32) {
+        self.r = clamp(self.r * strength);
+        self.g = clamp(self.g * strength);
+        self.b = clamp(self.b * strength);
+    }
 }
 
 impl std::ops::Add for Color {
@@ -42,6 +60,12 @@ impl From<i32> for Color {
         let g = ((x >>  8) & 0xff) as f32 / 255.0;
         let b = ((x >>  0) & 0xff) as f32 / 255.0;
         Color::new(r, g, b)
+    }
+}
+
+impl From<(f32, f32, f32)> for Color {
+    fn from(x: (f32, f32, f32)) -> Self {
+        Color::new(clamp(x.0), clamp(x.1), clamp(x.2))
     }
 }
 
