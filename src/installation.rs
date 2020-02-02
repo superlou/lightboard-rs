@@ -58,7 +58,7 @@ impl From<ElementConfig> for Element {
             _ => ElementKind::Unknown,
         };
 
-        let mut element = Element::new(kind, (0.0, 0.0, 0.0), 0.0);
+        let mut element = Element::new(kind);
 
         if let Some(channel) = config.i {
             element.add_channel("i", channel);

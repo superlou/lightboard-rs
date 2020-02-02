@@ -20,7 +20,7 @@ pub struct Element {
 }
 
 impl Element {
-    pub fn new(kind: ElementKind, color: (f32, f32, f32), intensity: f32) -> Element {
+    pub fn new(kind: ElementKind) -> Element {
         Element { kind, channels: HashMap::new() }
     }
 
