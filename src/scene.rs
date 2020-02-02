@@ -7,10 +7,12 @@ use crate::pattern::Pattern;
 use crate::light::Color;
 use crate::fixture::ElementKind;
 
+pub type GroupMap = HashMap<String, Vec<GroupElement>>;
+
 #[derive(Debug)]
 pub struct SceneManager {
     pub scenes: Vec<Scene>,
-    pub groups: HashMap<String, Vec<GroupElement>>,
+    pub groups: GroupMap,
 }
 
 #[derive(Debug)]
@@ -76,7 +78,7 @@ impl SceneManager {
     pub fn new(config_file: &str) -> Self {
         let config: SceneManagerConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
 
-        let groups: HashMap<String, Vec<GroupElement>> = config.groups.into_iter().map(|(name, config)| {
+        let groups: GroupMap = config.groups.into_iter().map(|(name, config)| {
             let group_elements = config.elements.iter().map(|s| {
                 let parts: Vec<&str> = s.split(":").collect();
                 GroupElement {
@@ -147,9 +149,7 @@ impl SceneManager {
 }
 
 impl Scene {
-    pub fn apply_to(&mut self, installation: &mut Installation,
-                    groups: &HashMap<String, Vec<GroupElement>>)
-    {
+    pub fn apply_to(&mut self, installation: &mut Installation, groups: &GroupMap) {
         let strength = self.strength;
 
         for scene_element in &self.scene_elements {
