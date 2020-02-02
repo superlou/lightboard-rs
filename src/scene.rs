@@ -118,7 +118,8 @@ impl SceneManager {
                     let pattern = Pattern::new(
                         &script,
                         &group_name,
-                        groups.get(&group_name).unwrap().len()
+                        groups.get(&group_name).unwrap().len(),
+                        options
                     );
 
                     scene_patterns.push(pattern);

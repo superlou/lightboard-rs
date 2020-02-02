@@ -1,19 +1,16 @@
-color = 0x123456
+options.color = {
+  default = 0xffffff,
+  desc = "Color"
+}
 
 function setup()
-  options = {}
-  options.color = {
-    default = color,
-    desc = "Color"
-  }
-  return options
 end
 
 function update(dt)
   values = {}
 
   for i = 1, element_count do
-    values[i] = color
+    values[i] = options.color.value
   end
 
   return values
