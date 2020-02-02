@@ -79,7 +79,7 @@ impl Fixture {
                         self.dmx_vec[(channel - 1) as usize] = (color.b() * 255.0) as u8;
                     }
                 },
-                ElementKind::Rgbiu{rgb: color, uv: uv} => {
+                ElementKind::Rgbiu{rgb: color, uv} => {
                     if let Some(channel) = element.channels.get("i") {
                         self.dmx_vec[(channel - 1) as usize] = 255;
                     }

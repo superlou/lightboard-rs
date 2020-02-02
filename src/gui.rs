@@ -48,7 +48,6 @@ struct Visualizer {
     installation: Installation,
     scene_manager: SceneManager,
     dmx_send: mpsc::Sender<Vec<u8>>,
-    color: [f32; 4],
     selected: Vec<String>,
     hitbox_manager: HitboxManager,
     installation_view_origin: Point2<f32>,
@@ -67,7 +66,6 @@ impl Visualizer {
             installation: installation,
             scene_manager: scene_manager,
             dmx_send: dmx_send,
-            color: [0.0, 0.0, 0.0, 0.0],
             selected: vec![],
             hitbox_manager: HitboxManager::new(),
             installation_view_origin: Point2::new(10.0, 10.0),
@@ -139,7 +137,7 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: b
                 ).unwrap();
                 graphics::draw(ctx, &circle, DrawParam::default().dest(location * scale + origin)).unwrap();
             },
-            ElementKind::Rgbiu{rgb: color, uv: uv} => {
+            ElementKind::Rgbiu{rgb: color, uv: _} => {
                 let color = graphics::Color::new(color.r(), color.g(), color.b(), 1.0);
                 let circle = graphics::Mesh::new_circle(
                     ctx,

@@ -1,5 +1,3 @@
-use std::f32::NAN;
-
 #[derive(Debug, Clone)]
 pub struct Color {
     r: f32,
@@ -78,6 +76,7 @@ impl From<(f32, f32, f32)> for Color {
 
 #[cfg(test)]
 mod tests {
+    use std::f32::NAN;
     use super::*;
 
     #[test]

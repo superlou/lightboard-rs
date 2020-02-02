@@ -45,7 +45,7 @@ impl Pattern {
             let options_table = setup.call::<String, Table>(group.to_owned()).unwrap();
 
             for pair in options_table.pairs::<String, Table>() {
-                let (name, option_table) = pair.unwrap();
+                let (_name, option_table) = pair.unwrap();
                 let default: u32 = option_table.get("default").unwrap();
                 let desc: String = option_table.get("desc").unwrap();
 
