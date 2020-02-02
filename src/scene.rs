@@ -123,16 +123,12 @@ impl SceneManager {
                 }
             }
 
-            let scene = Scene {
+            Scene {
                 name: scene_config.name.to_owned(),
                 strength: 0.0,
                 scene_elements: scene_elements,
                 scene_patterns: scene_patterns,
-            };
-
-            dbg!(&scene);
-
-            scene
+            }
         }).collect();
 
         Self {
