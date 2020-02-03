@@ -3,7 +3,7 @@ use ggez::graphics::{DrawParam, Rect, Text, set_screen_coordinates};
 use ggez::conf::WindowMode;
 use ggez::event::{MouseButton, KeyCode, KeyMods};
 use ggez::event::{self, EventHandler};
-use ggez::nalgebra::Point2;
+use ggez::nalgebra::{Point2, Vector2};
 use std::sync::mpsc;
 use crate::imgui_wrapper::ImGuiWrapper;
 use crate::installation::Installation;
@@ -170,6 +170,12 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: b
             *COLOR_FIXTURE_OUTLINE_SELECTED,
         ).unwrap();
         graphics::draw(ctx, &outline, DrawParam::default().dest(location * scale + origin)).unwrap();
+
+        for (i, (name, _element)) in fixture.elements.iter().enumerate() {
+            let label = Text::new(name.clone());
+            let dim = label.dimensions(ctx);
+            graphics::draw(ctx, &label, (location * scale + origin + Vector2::new(i as f32 * 1.0 * scale, 1.0 * scale - dim.1 as f32), graphics::WHITE)).unwrap();
+        }
     }
 
     let label = Text::new(name);
