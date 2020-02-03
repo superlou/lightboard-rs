@@ -156,7 +156,7 @@ impl Scene {
         for scene_element in &self.scene_elements {
             let element = installation.fixtures_mut()
                             .get_mut(&scene_element.fixture).unwrap()
-                            .elements.get_mut(&scene_element.element).unwrap();
+                            .elements_mut().get_mut(&scene_element.element).unwrap();
 
             match scene_element.value {
                 Value::Integer(value) => {
@@ -189,7 +189,7 @@ impl Scene {
             for (scene_element, new_value) in pattern_elements.iter().zip(new_values.iter()) {
                 let element = installation.fixtures_mut()
                                 .get_mut(&scene_element.fixture).unwrap()
-                                .elements.get_mut(&scene_element.element).unwrap();
+                                .elements_mut().get_mut(&scene_element.element).unwrap();
 
                 let kind = match element.kind() {
                     ElementKind::Rgbi(color) => {

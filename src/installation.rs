@@ -105,18 +105,12 @@ impl Installation {
         let config: InstallationConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
 
         let fixtures: HashMap<_, _> = config.fixtures.into_iter().map(|(name, config)| {
-            // todo This needs to use a ::new function and have a better way of determining
-            // the number of channels
-            let mut dmx_vec = vec![];
             let (elements, num_channels) = load_elements(&config.kind, &config.mode);
-            dmx_vec.resize(num_channels, 0);
+            let fixture = Fixture::new(
+                elements, Point2::new(config.pos.0, config.pos.1),
+                config.channel as usize, num_channels
+            );
 
-            let fixture = Fixture {
-                elements: elements,
-                pos: Point2::new(config.pos.0, config.pos.1),
-                dmx_vec: dmx_vec,
-                channel: config.channel as usize,
-            };
             (name, fixture)
         }).collect();
 
@@ -140,7 +134,7 @@ impl Installation {
 
     pub fn zero(&mut self) {
         for (_name, fixture) in self.fixtures.iter_mut() {
-            for (_name, element) in fixture.elements.iter_mut() {
+            for (_name, element) in fixture.elements_mut().iter_mut() {
                 match element.kind() {
                     ElementKind::Rgbi(_) => {
                         element.set_kind(ElementKind::Rgbi(Color::black()));
@@ -163,7 +157,7 @@ impl Installation {
         for (_name, fixture) in self.fixtures.iter_mut() {
             fixture.update_dmx();
             let fixture_dmx = fixture.dmx().to_vec();
-            let channel = fixture.channel - 1;
+            let channel = fixture.channel() - 1;
 
             let required_length = channel + fixture_dmx.len();
 

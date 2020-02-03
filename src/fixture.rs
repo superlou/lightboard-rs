@@ -17,11 +17,12 @@ pub enum ElementKind {
 pub struct Element {
     kind: ElementKind,
     channels: HashMap<String, u8>,
+    pos: (usize, usize),
 }
 
 impl Element {
     pub fn new(kind: ElementKind) -> Element {
-        Element { kind, channels: HashMap::new() }
+        Element { kind, channels: HashMap::new(), pos: (0, 0) }
     }
 
     pub fn add_channel(&mut self, name: &str, index: u8) {
@@ -35,27 +36,63 @@ impl Element {
     pub fn set_kind(&mut self, kind: ElementKind) {
         self.kind = kind;
     }
+
+    pub fn pos(&self) -> (usize, usize) {
+        self.pos
+    }
+
+    pub fn set_pos(&mut self, x: usize, y: usize) {
+        self.pos = (x, y);
+    }
+
+    pub fn arrange_linear(elements: &mut HashMap<String, Element>) {
+        let mut element_names: Vec<String> = elements.iter().map(|(name, _element)| name.clone()).collect();
+        element_names.sort();
+        for (i, name) in element_names.iter().enumerate() {
+            elements.get_mut(name).unwrap().set_pos(i, 0);
+        }
+    }
 }
 
 #[derive(Debug)]
 pub struct Fixture {
-    pub elements: HashMap<String, Element>,
-    pub pos: Point2<f32>,
-    pub dmx_vec: Vec<u8>,
-    pub channel: usize,
+    elements: HashMap<String, Element>,
+    pos: Point2<f32>,
+    dmx_vec: Vec<u8>,
+    channel: usize,
 }
 
 impl Fixture {
-    pub fn new(pos: Point2<f32>, channel: usize, num_channels: usize) -> Self {
+    pub fn new(mut elements: HashMap<String, Element>, pos: Point2<f32>,
+               channel: usize, num_channels: usize) -> Self
+    {
         let mut dmx_vec = vec![];
         dmx_vec.resize(num_channels, 0);
 
+        Element::arrange_linear(&mut elements);
+
         Self {
-            elements: HashMap::new(),
+            elements: elements,
             pos: pos,
             dmx_vec: dmx_vec,
             channel: channel,
         }
+    }
+
+    pub fn channel(&self) -> usize {
+        self.channel
+    }
+
+    pub fn pos(&self) -> Point2<f32> {
+        self.pos
+    }
+
+    pub fn elements(&self) -> &HashMap<String, Element> {
+        &self.elements
+    }
+
+    pub fn elements_mut(&mut self) -> &mut HashMap<String, Element> {
+        &mut self.elements
     }
 
     pub fn update_dmx(&mut self) {

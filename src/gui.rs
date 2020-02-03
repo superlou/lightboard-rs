@@ -84,10 +84,10 @@ impl Visualizer {
         self.hitbox_manager.clear();
 
         for (name, fixture) in self.installation.fixtures() {
-            let location = fixture.pos;
+            let location = fixture.pos();
             let rect = Rect::new(location.x * scale + origin.coords.x,
                                  location.y * scale + origin.coords.y,
-                                 fixture.elements.len() as f32 * 1.0 * scale,
+                                 fixture.elements().len() as f32 * 1.0 * scale,
                                  1.0 * scale);
             self.hitbox_manager.add(rect, name);
         }
@@ -112,18 +112,20 @@ fn render_installation(ctx: &mut Context, installation: &Installation, selected:
 fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: bool,
                 origin: &Point2<f32>, scale: f32)
 {
-    let location = fixture.pos;
+    let location = fixture.pos();
     let origin = origin.coords;
 
     let background = graphics::Mesh::new_rectangle(
         ctx,
         graphics::DrawMode::fill(),
-        Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0 * scale, 1.0 * scale),
+        Rect::new(0.0, 0.0, fixture.elements().len() as f32 * 1.0 * scale, 1.0 * scale),
         *COLOR_FIXTURE_BG,
     ).unwrap();
     graphics::draw(ctx, &background, DrawParam::default().dest(location * scale + origin)).unwrap();
 
-    for (i, (_name, element)) in fixture.elements.iter().enumerate() {
+    for (_name, element) in fixture.elements().iter() {
+        let i = element.pos().0;
+
         match element.kind() {
             ElementKind::Rgbi(color) => {
                 let color = graphics::Color::new(color.r(), color.g(), color.b(), 1.0);
@@ -157,7 +159,7 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: b
     let outline = graphics::Mesh::new_rectangle(
         ctx,
         graphics::DrawMode::stroke(1.0),
-        Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0 * scale, 1.0 * scale),
+        Rect::new(0.0, 0.0, fixture.elements().len() as f32 * 1.0 * scale, 1.0 * scale),
         *COLOR_FIXTURE_OUTLINE,
     ).unwrap();
     graphics::draw(ctx, &outline, DrawParam::default().dest(location * scale + origin)).unwrap();
@@ -166,12 +168,13 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: b
         let outline = graphics::Mesh::new_rectangle(
             ctx,
             graphics::DrawMode::stroke(1.0),
-            Rect::new(0.0, 0.0, fixture.elements.len() as f32 * 1.0 * scale, 1.0 * scale),
+            Rect::new(0.0, 0.0, fixture.elements().len() as f32 * 1.0 * scale, 1.0 * scale),
             *COLOR_FIXTURE_OUTLINE_SELECTED,
         ).unwrap();
         graphics::draw(ctx, &outline, DrawParam::default().dest(location * scale + origin)).unwrap();
 
-        for (i, (name, _element)) in fixture.elements.iter().enumerate() {
+        for (name, element) in fixture.elements().iter() {
+            let i = element.pos().0;
             let label = Text::new(name.clone());
             let dim = label.dimensions(ctx);
             graphics::draw(ctx, &label, (location * scale + origin + Vector2::new(i as f32 * 1.0 * scale, 1.0 * scale - dim.1 as f32), graphics::WHITE)).unwrap();
