@@ -1,6 +1,6 @@
 use ggez::{graphics, Context, ContextBuilder, GameResult};
 use ggez::graphics::{DrawParam, Rect, Text, set_screen_coordinates};
-use ggez::conf::WindowMode;
+use ggez::conf::{WindowMode, WindowSetup};
 use ggez::event::{MouseButton, KeyCode, KeyMods};
 use ggez::event::{self, EventHandler};
 use ggez::nalgebra::{Point2, Vector2};
@@ -23,6 +23,10 @@ pub fn run_gui(installation: Installation, scene_manager: SceneManager,
             height: INITIAL_HEIGHT,
             resizable: true,
             ..WindowMode::default()
+        })
+        .window_setup(WindowSetup {
+            title: "Lightboard".to_owned(),
+            ..WindowSetup::default()
         })
         .build()
         .expect("Could not create ggez context!");
@@ -48,6 +52,7 @@ struct Visualizer {
     installation: Installation,
     scene_manager: SceneManager,
     dmx_send: mpsc::Sender<Vec<u8>>,
+    dmx_chain: Vec<u8>,
     selected: Vec<String>,
     hitbox_manager: HitboxManager,
     installation_view_origin: Point2<f32>,
@@ -66,6 +71,7 @@ impl Visualizer {
             installation: installation,
             scene_manager: scene_manager,
             dmx_send: dmx_send,
+            dmx_chain: vec![],
             selected: vec![],
             hitbox_manager: HitboxManager::new(),
             installation_view_origin: Point2::new(10.0, 10.0),
@@ -194,6 +200,7 @@ impl EventHandler for Visualizer {
         self.scene_manager.apply_to(&mut self.installation);
 
         let chain = self.installation.build_dmx_chain();
+        self.dmx_chain = chain.clone();
         self.dmx_status = match self.dmx_send.send(chain) {
             Ok(_) => DmxStatus::Ok,
             Err(_) => DmxStatus::Error,
@@ -205,7 +212,8 @@ impl EventHandler for Visualizer {
         graphics::clear(ctx, graphics::BLACK);
         render_installation(ctx, &self.installation, &self.selected,
                             &self.installation_view_origin, self.installation_view_scale);
-        self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.scene_manager, &self.dmx_status);
+        self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.scene_manager,
+                                  &self.dmx_status, &self.dmx_chain);
         graphics::present(ctx)
     }
 

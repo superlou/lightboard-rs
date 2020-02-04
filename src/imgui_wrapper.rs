@@ -62,7 +62,7 @@ impl ImGuiWrapper {
     }
 
     pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32,
-                  scene_manager: &mut SceneManager, dmx_status: &DmxStatus)
+                  scene_manager: &mut SceneManager, dmx_status: &DmxStatus, dmx_chain: &Vec<u8>)
     {
         self.update_mouse();
 
@@ -93,7 +93,16 @@ impl ImGuiWrapper {
                 .speed(0.01)
                 .build();
             }
-          });
+        });
+
+        imgui::Window::new(im_str!("DMX Channels"))
+          .size([300.0, 300.0], imgui::Condition::FirstUseEver)
+          .position([100.0, 300.0], imgui::Condition::FirstUseEver)
+          .build(&ui, || {
+            for (i, channel) in dmx_chain.iter().enumerate() {
+                ui.text(im_str!("{}: {}", i, channel));
+            }
+        });
 
         let (factory, _, encoder, _, render_target) = graphics::gfx_objects(ctx);
         let draw_data = ui.render();
