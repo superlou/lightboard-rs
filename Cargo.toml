@@ -8,22 +8,15 @@ edition = "2018"
 
 [dependencies]
 lazy_static = "1"
-
 dmx = "0.2"
-
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5"
-
 ggez = "0.5"
-
 gfx_core = "0.9"
 gfx_device_gl = "0.16"
-
 imgui = "0.2"
 imgui-gfx-renderer = "0.2"
-
 image = "0.22"
-
 nalgebra = "0.18.0"
-
 rlua = "0.17"
+clap = "2.0"

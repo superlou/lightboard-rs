@@ -13,6 +13,7 @@ pub type GroupMap = HashMap<String, Vec<GroupElement>>;
 pub struct SceneManager {
     pub scenes: Vec<Scene>,
     pub groups: GroupMap,
+    pub installation: String,
 }
 
 #[derive(Debug)]
@@ -38,6 +39,7 @@ pub struct SceneElement {
 
 #[derive(Deserialize, Debug)]
 struct SceneManagerConfig {
+    installation: Option<String>,
     scenes: Vec<SceneConfig>,
     groups: HashMap<String, GroupConfig>,
 }
@@ -137,6 +139,7 @@ impl SceneManager {
         Self {
             scenes: scenes,
             groups: groups,
+            installation: config.installation.unwrap_or("installation.toml".to_owned()),
         }
     }
 

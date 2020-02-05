@@ -13,17 +13,24 @@ mod light;
 
 use std::{thread};
 use std::sync::mpsc;
-
+use clap::{Arg, App};
 use installation::Installation;
 use scene::SceneManager;
 
 fn main() {
+    let matches = App::new("Lightboard-rs")
+                    .about("Rust DMX lighting controller")
+                    .arg(Arg::with_name("scenes")
+                            .help("Name of scenes file"))
+                    .get_matches();
+
     println!("Started");
 
     let (send, recv) = mpsc::channel();
 
-    let installation = Installation::new("installation.toml");
-    let scene_manager = SceneManager::new("scenes.toml");
+    let scenes_file = matches.value_of("scenes").unwrap_or("scenes.toml");
+    let scene_manager = SceneManager::new(scenes_file);
+    let installation = Installation::new(&scene_manager.installation);
 
     thread::spawn(move || { dmx_control::update(recv) });
 

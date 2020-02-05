@@ -1,3 +1,5 @@
+installation="installation.toml"
+
 [[scenes]]
 name = "A"
 fixtures.5.elements.1 = 0x4300ff

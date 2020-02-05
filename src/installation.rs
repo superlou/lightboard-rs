@@ -102,7 +102,10 @@ fn load_elements(kind: &str, mode: &str) -> (HashMap<String, Element>, usize) {
 
 impl Installation {
     pub fn new(config_file: &str) -> Installation {
-        let config: InstallationConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
+        let config_text = read_to_string(config_file)
+                            .expect(&format!("Failed to find {}", config_file));
+        let config: InstallationConfig = toml::from_str(&config_text)
+                            .expect(&format!("Failed to parse {}", config_file));
 
         let fixtures: HashMap<_, _> = config.fixtures.into_iter().map(|(name, config)| {
             let (elements, num_channels) = load_elements(&config.kind, &config.mode);
