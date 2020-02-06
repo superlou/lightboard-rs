@@ -8,7 +8,6 @@ use crate::light::Color;
 
 #[derive(Deserialize, Debug)]
 struct InstallationConfig {
-    size: (f32, f32),
     fixtures: HashMap<String, FixtureConfig>,
 }
 
@@ -112,5 +111,5 @@ pub fn build_from_config(config_file: &str) -> Installation {
         (name, fixture)
     }).collect();
 
-    Installation::new(fixtures, config.size)
+    Installation::new(fixtures)
 }

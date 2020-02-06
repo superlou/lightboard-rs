@@ -4,13 +4,12 @@ use crate::light::Color;
 use crate::installation_loader;
 
 pub struct Installation {
-    size: (f32, f32),
     fixtures: HashMap<String, Fixture>
 }
 
 impl Installation {
-    pub fn new(fixtures: HashMap<String, Fixture>, size: (f32, f32)) -> Self {
-        Self { fixtures, size }
+    pub fn new(fixtures: HashMap<String, Fixture>) -> Self {
+        Self { fixtures }
     }
 
     pub fn new_from_config(config_file: &str) -> Installation {
@@ -23,10 +22,6 @@ impl Installation {
 
     pub fn fixtures_mut(&mut self) -> &mut HashMap<String, Fixture> {
         &mut self.fixtures
-    }
-
-    pub fn size(&self) -> &(f32, f32) {
-        &self.size
     }
 
     pub fn zero(&mut self) {

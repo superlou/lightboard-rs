@@ -1,5 +1,3 @@
-size = [10, 10]
-
 [fixtures.1]
 kind = "elation_colour_chorus_24"
 channel = 1
