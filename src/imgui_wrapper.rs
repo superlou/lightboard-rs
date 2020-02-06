@@ -100,7 +100,7 @@ impl ImGuiWrapper {
           .position([100.0, 300.0], imgui::Condition::FirstUseEver)
           .build(&ui, || {
             for (i, channel) in dmx_chain.iter().enumerate() {
-                ui.text(im_str!("{}: {}", i, channel));
+                ui.text(im_str!("{}: {}", i + 1, channel));
             }
         });
 
