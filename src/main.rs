@@ -10,6 +10,8 @@ mod scene;
 mod hitbox;
 mod pattern;
 mod light;
+mod installation_loader;
+mod scene_manager_loader;
 
 use std::{thread};
 use std::sync::mpsc;
@@ -29,8 +31,8 @@ fn main() {
     let (send, recv) = mpsc::channel();
 
     let scenes_file = matches.value_of("scenes").unwrap_or("scenes.toml");
-    let scene_manager = SceneManager::new(scenes_file);
-    let installation = Installation::new(&scene_manager.installation);
+    let scene_manager = SceneManager::new_from_config(scenes_file);
+    let installation = Installation::new_from_config(&scene_manager.installation());
 
     thread::spawn(move || { dmx_control::update(recv) });
 

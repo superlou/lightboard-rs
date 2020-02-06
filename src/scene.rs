@@ -1,33 +1,32 @@
 use std::collections::HashMap;
-use std::fs::read_to_string;
-use toml::value::Value;
-use serde::Deserialize;
 use crate::installation::Installation;
 use crate::pattern::Pattern;
 use crate::light::Color;
 use crate::fixture::ElementKind;
+use crate::scene_manager_loader;
+use toml::value::Value;
 
 pub type GroupMap = HashMap<String, Vec<GroupElement>>;
 
 #[derive(Debug)]
 pub struct SceneManager {
-    pub scenes: Vec<Scene>,
-    pub groups: GroupMap,
-    pub installation: String,
+    scenes: Vec<Scene>,
+    groups: GroupMap,
+    installation: String,
 }
 
 #[derive(Debug)]
 pub struct GroupElement {
-    fixture: String,
-    element: String,
+    pub fixture: String,
+    pub element: String,
 }
 
 #[derive(Debug)]
 pub struct Scene {
-    pub name: String,
-    pub strength: f32,
-    pub scene_elements: Vec<SceneElement>,
-    pub scene_patterns: Vec<Pattern>,
+    name: String,
+    strength: f32,
+    scene_elements: Vec<SceneElement>,
+    scene_patterns: Vec<Pattern>,
 }
 
 #[derive(Debug)]
@@ -37,110 +36,23 @@ pub struct SceneElement {
     value: Value,
 }
 
-#[derive(Deserialize, Debug)]
-struct SceneManagerConfig {
-    installation: Option<String>,
-    scenes: Vec<SceneConfig>,
-    groups: HashMap<String, GroupConfig>,
-}
-
-#[derive(Deserialize, Debug)]
-struct SceneConfig {
-    name: String,
-    fixtures: Option<HashMap<String, FixtureConfig>>,
-    groups: Option<HashMap<String, GroupSceneConfig>>
-}
-
-#[derive(Deserialize, Debug)]
-struct FixtureConfig {
-    elements: HashMap<String, Value>,
-}
-
-#[derive(Deserialize, Debug)]
-struct ElementConfig {
-
-}
-
-#[derive(Deserialize, Debug)]
-struct GroupConfig {
-    elements: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-struct GroupSceneConfig {
-    pattern: HashMap<String, Value>,
-}
-
-#[derive(Deserialize, Debug)]
-struct PatternConfig {
-    name: String
+impl SceneElement {
+    pub fn new(fixture: &str, element: &str, value: Value) -> Self {
+        Self {
+            fixture: fixture.to_owned(),
+            element: element.to_owned(),
+            value: value
+        }
+    }
 }
 
 impl SceneManager {
-    pub fn new(config_file: &str) -> Self {
-        let config: SceneManagerConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
+    pub fn new(scenes: Vec<Scene>, groups: GroupMap, installation: String) -> Self {
+        Self { scenes, groups, installation }
+    }
 
-        let groups: GroupMap = config.groups.into_iter().map(|(name, config)| {
-            let group_elements = config.elements.iter().map(|s| {
-                let parts: Vec<&str> = s.split(":").collect();
-                GroupElement {
-                    fixture: parts[0].to_owned(),
-                    element: parts[1].to_owned(),
-                }
-            }).collect();
-
-            (name, group_elements)
-        }).collect();
-
-        let scenes = config.scenes.into_iter().map(|scene_config| {
-            let mut scene_elements = vec![];
-
-            if let Some(fixtures) = scene_config.fixtures {
-                for (fixture_name, fixture) in fixtures {
-                    for (element_name, value) in fixture.elements {
-                        scene_elements.push(SceneElement {
-                            fixture: fixture_name.clone(),
-                            element: element_name,
-                            value: value,
-                        });
-                    }
-                }
-            }
-
-            let mut scene_patterns = vec![];
-
-            if let Some(scene_groups) = scene_config.groups {
-                for (group_name, group) in scene_groups {
-                    let mut options = group.pattern;
-                    let script = match options.remove("script").unwrap() {
-                        Value::String(s) => s,
-                        _ => { println!("Expected string"); continue },
-                    };
-
-                    let pattern = Pattern::new(
-                        &script,
-                        &group_name,
-                        groups.get(&group_name).unwrap().len(),
-                        options
-                    );
-
-                    scene_patterns.push(pattern);
-                }
-            }
-
-            Scene {
-                name: scene_config.name.to_owned(),
-                strength: 0.0,
-                scene_elements: scene_elements,
-                scene_patterns: scene_patterns,
-            }
-        }).collect();
-
-        Self {
-            scenes: scenes,
-            groups: groups,
-            installation: config.installation.unwrap_or("installation.toml".to_owned()),
-        }
+    pub fn new_from_config(config_file: &str) -> Self {
+        scene_manager_loader::build_from_config(config_file)
     }
 
     pub fn apply_to(&mut self, installation: &mut Installation) {
@@ -150,9 +62,27 @@ impl SceneManager {
             scene.apply_to(installation, &self.groups);
         }
     }
+
+    pub fn installation(&self) -> &str {
+        &self.installation
+    }
+
+    pub fn scenes_mut(&mut self) -> &mut Vec<Scene> {
+        &mut self.scenes
+    }
 }
 
 impl Scene {
+    pub fn new(name: &str, strength: f32, elements: Vec<SceneElement>,
+               patterns: Vec<Pattern>) -> Self {
+        Self {
+            name: name.to_owned(),
+            strength: strength,
+            scene_elements: elements,
+            scene_patterns: patterns,
+        }
+    }
+
     pub fn apply_to(&mut self, installation: &mut Installation, groups: &GroupMap) {
         let strength = self.strength;
 
@@ -213,5 +143,13 @@ impl Scene {
                 }
             }
         }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn strength_mut(&mut self) -> &mut f32 {
+        &mut self.strength
     }
 }

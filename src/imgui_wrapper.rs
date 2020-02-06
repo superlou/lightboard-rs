@@ -86,8 +86,8 @@ impl ImGuiWrapper {
               ui.text(im_str!("DMX sending failed!"));
             }
 
-            for scene in scene_manager.scenes.iter_mut() {
-              ui.drag_float(&ImString::new(scene.name.clone()), &mut scene.strength)
+            for scene in scene_manager.scenes_mut().iter_mut() {
+              ui.drag_float(&ImString::new(scene.name().clone()), &mut scene.strength_mut())
                 .min(0.0)
                 .max(1.0)
                 .speed(0.01)
