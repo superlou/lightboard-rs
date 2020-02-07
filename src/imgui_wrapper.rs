@@ -82,10 +82,6 @@ impl ImGuiWrapper {
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
           .position([100.0, 100.0], imgui::Condition::FirstUseEver)
           .build(&ui, || {
-            if dmx_status != &DmxStatus::Ok {
-              ui.text(im_str!("DMX sending failed!"));
-            }
-
             for scene in scene_manager.scenes_mut().iter_mut() {
               ui.drag_float(&ImString::new(scene.name().clone()), &mut scene.strength_mut())
                 .min(0.0)
@@ -99,6 +95,10 @@ impl ImGuiWrapper {
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
           .position([100.0, 300.0], imgui::Condition::FirstUseEver)
           .build(&ui, || {
+            if dmx_status != &DmxStatus::Ok {
+                ui.text(im_str!("Sending failed!"));
+            }
+
             for (i, channel) in dmx_chain.iter().enumerate() {
                 ui.text(im_str!("{}: {}", i + 1, channel));
             }
