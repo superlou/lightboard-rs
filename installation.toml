@@ -26,23 +26,77 @@ pos = [15, 5]
 kind = "cheap_led_par_light"
 channel = 69
 mode = "0"
-pos = [6, 2]
+pos = [6, 3]
 
 [fixtures.6]
 kind = "cheap_led_par_light"
 channel = 77
 mode = "0"
-pos = [8, 2]
+pos = [8, 3]
 
 [fixtures.7]
 kind = "cheap_led_par_light"
 channel = 85
 mode = "0"
-pos = [10, 2]
+pos = [10, 3]
 
 
 [fixtures.8]
 kind = "cheap_led_par_light"
 channel = 93
 mode = "0"
-pos = [12, 2]
+pos = [12, 3]
+
+[fixtures.9]
+kind = "standard_intensity_light"
+channel = 101
+mode = "0"
+pos = [1, 1]
+
+[fixtures.10]
+kind = "standard_intensity_light"
+channel = 102
+mode = "0"
+pos = [3, 1]
+
+[fixtures.11]
+kind = "standard_intensity_light"
+channel = 103
+mode = "0"
+pos = [5, 1]
+
+[fixtures.12]
+kind = "standard_intensity_light"
+channel = 104
+mode = "0"
+pos = [7, 1]
+
+[fixtures.13]
+kind = "standard_intensity_light"
+channel = 105
+mode = "0"
+pos = [9, 1]
+
+[fixtures.14]
+kind = "standard_intensity_light"
+channel = 106
+mode = "0"
+pos = [11, 1]
+
+[fixtures.15]
+kind = "standard_intensity_light"
+channel = 107
+mode = "0"
+pos = [13, 1]
+
+[fixtures.16]
+kind = "standard_intensity_light"
+channel = 108
+mode = "0"
+pos = [15, 1]
+
+[fixtures.17]
+kind = "standard_intensity_light"
+channel = 109
+mode = "0"
+pos = [17, 1]

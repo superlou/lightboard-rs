@@ -1,0 +1,4 @@
+[[modes]]
+name = "0"
+num_channels = 1
+elements.1 = {kind="intensity", i=1}

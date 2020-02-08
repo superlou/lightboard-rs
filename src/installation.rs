@@ -28,9 +28,8 @@ impl Installation {
         for (_name, fixture) in self.fixtures.iter_mut() {
             for (_name, element) in fixture.elements_mut().iter_mut() {
                 match element.kind() {
-                    ElementKind::Rgbi(_) => {
-                        element.set_kind(ElementKind::Rgbi(Color::black()));
-                    },
+                    ElementKind::Intensity(_) => element.set_kind(ElementKind::Intensity(0.0)),
+                    ElementKind::Rgbi(_) => element.set_kind(ElementKind::Rgbi(Color::black())),
                     ElementKind::Rgbiu{rgb: _, uv: _} => {
                         element.set_kind(ElementKind::Rgbiu{
                             rgb: Color::black(),

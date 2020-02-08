@@ -44,6 +44,7 @@ struct ElementConfig {
 impl From<ElementConfig> for Element {
     fn from(config: ElementConfig) -> Self {
         let kind = match config.kind.as_str() {
+            "intensity" => ElementKind::Intensity(0.0),
             "rgbiu" => ElementKind::Rgbiu{rgb: Color::black(), uv: 1.0},
             "rgbi" => ElementKind::Rgbi(Color::black()),
             "u" => ElementKind::Uv(0.0),

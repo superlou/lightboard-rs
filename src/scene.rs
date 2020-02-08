@@ -94,6 +94,10 @@ impl Scene {
             match scene_element.value {
                 Value::Integer(value) => {
                     let kind = match element.kind() {
+                        ElementKind::Intensity(intensity) => {
+                            let effect_intensity = (value as i32 & 0xff) as f32 / 255.0 * strength;
+                            Some(ElementKind::Intensity(intensity + effect_intensity))
+                        },
                         ElementKind::Rgbi(color) => {
                             let mut effect_color: Color = (value as i32).into();
                             effect_color.scale(strength);
@@ -125,6 +129,10 @@ impl Scene {
                                 .elements_mut().get_mut(&scene_element.element).unwrap();
 
                 let kind = match element.kind() {
+                    ElementKind::Intensity(intensity) => {
+                        let effect_intensity = (*new_value as i32 & 0xff) as f32 / 255.0 * strength;
+                        Some(ElementKind::Intensity(intensity + effect_intensity))
+                    }
                     ElementKind::Rgbi(color) => {
                         let mut effect_color: Color = (*new_value as i32).into();
                         effect_color.scale(strength);

@@ -133,6 +133,18 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: b
         let i = element.pos().0;
 
         match element.kind() {
+            ElementKind::Intensity(intensity) => {
+                let color = graphics::Color::new(*intensity, *intensity, *intensity, 1.0);
+                let circle = graphics::Mesh::new_circle(
+                    ctx,
+                    graphics::DrawMode::fill(),
+                    Point2::new(i as f32 * 1.0 + 0.5, 0.5) * scale,
+                    0.5 * scale,
+                    0.001,
+                    color,
+                ).unwrap();
+                graphics::draw(ctx, &circle, DrawParam::default().dest(location * scale + origin)).unwrap();
+            },
             ElementKind::Rgbi(color) => {
                 let color = graphics::Color::new(color.r(), color.g(), color.b(), 1.0);
                 let circle = graphics::Mesh::new_circle(

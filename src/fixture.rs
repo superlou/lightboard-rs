@@ -4,6 +4,7 @@ use crate::light::{Color, Intensity};
 
 #[derive(Debug)]
 pub enum ElementKind {
+    Intensity(Intensity),
     Rgbiu{rgb: Color, uv: Intensity},
     Rgbi(Color),
     Uv(Intensity),
@@ -96,9 +97,14 @@ impl Fixture {
     }
 
     pub fn update_dmx(&mut self) {
-        // This only supports basic RGB fixtures right now
+        // This only supports basic fixture elements right now
         for (_name, element) in self.elements.iter() {
             match &element.kind {
+                ElementKind::Intensity(intensity) => {
+                    if let Some(channel) = element.channels.get("i") {
+                        self.dmx_vec[(channel - 1) as usize] = (intensity * 255.0) as u8;
+                    }
+                },
                 ElementKind::Rgbi(color) => {
                     if let Some(channel) = element.channels.get("i") {
                         self.dmx_vec[(channel - 1) as usize] = 255;
