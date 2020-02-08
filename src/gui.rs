@@ -195,8 +195,18 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: b
             let i = element.pos().0;
             let label = Text::new(name.clone());
             let dim = label.dimensions(ctx);
-            graphics::draw(ctx, &label, (location * scale + origin + Vector2::new(i as f32 * 1.0 * scale, 1.0 * scale - dim.1 as f32), graphics::WHITE)).unwrap();
+            let draw_param = DrawParam::default()
+                .dest(location * scale + origin + Vector2::new(i as f32 * 1.0 * scale, 1.0 * scale - dim.1 as f32))
+                .color(graphics::WHITE);
+            graphics::draw(ctx, &label, draw_param).unwrap();
         }
+
+        let channel_text = Text::new(format!("CH {}", fixture.channel()));
+        let draw_param = DrawParam::default()
+            .dest(location * scale + origin + Vector2::new(0.0, 1.0 * scale))
+            .color(graphics::WHITE)
+            .scale(Vector2::new(0.8, 0.8));
+        graphics::draw(ctx, &channel_text, draw_param).unwrap();
     }
 
     let label = Text::new(name);
