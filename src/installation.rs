@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::fixture::{Fixture, ElementKind};
+use crate::fixture::{Fixture, ElementKind, Element};
 use crate::light::Color;
 use crate::installation_loader;
 
@@ -20,8 +20,13 @@ impl Installation {
         &self.fixtures
     }
 
-    pub fn fixtures_mut(&mut self) -> &mut HashMap<String, Fixture> {
-        &mut self.fixtures
+    pub fn find_element(&mut self, fixture: &str, element: &str) -> Option<&mut Element> {
+        let fixture = match self.fixtures.get_mut(fixture) {
+            Some(f) => f,
+            None => return None,
+        };
+
+        fixture.elements_mut().get_mut(element)
     }
 
     pub fn zero(&mut self) {
