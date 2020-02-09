@@ -78,19 +78,21 @@ fn build_pattern(config: &mut HashMap<String, Value>, groups: &GroupMap) -> Opti
     Some(Pattern::new(&script, group_name, num_group_elements, options))
 }
 
+fn build_group_elements(config: &GroupConfig) -> Vec<GroupElement> {
+    config.elements.iter().map(|s| {
+        let parts: Vec<&str> = s.split(":").collect();
+        GroupElement {
+            fixture: parts[0].to_owned(),
+            element: parts[1].to_owned(),
+        }
+    }).collect()
+}
+
 pub fn build_from_config(config_file: &str) -> SceneManager {
     let config: SceneManagerConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
 
     let groups: GroupMap = config.groups.into_iter().map(|(name, config)| {
-        let group_elements = config.elements.iter().map(|s| {
-            let parts: Vec<&str> = s.split(":").collect();
-            GroupElement {
-                fixture: parts[0].to_owned(),
-                element: parts[1].to_owned(),
-            }
-        }).collect();
-
-        (name, group_elements)
+        (name, build_group_elements(&config))
     }).collect();
 
     let scenes = config.scenes.into_iter().map(|scene_config| {
