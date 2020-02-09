@@ -15,8 +15,10 @@ struct SceneManagerConfig {
 #[derive(Deserialize, Debug)]
 struct SceneConfig {
     name: String,
-    fixtures: Option<HashMap<String, FixtureConfig>>,
-    groups: Option<HashMap<String, GroupSceneConfig>>
+    elements: Option<Vec<HashMap<String, Value>>>,
+    patterns: Option<Vec<HashMap<String, Value>>>,
+    // fixtures: Option<HashMap<String, FixtureConfig>>,
+    // groups: Option<HashMap<String, GroupSceneConfig>>
 }
 
 #[derive(Deserialize, Debug)]
@@ -26,7 +28,6 @@ struct FixtureConfig {
 
 #[derive(Deserialize, Debug)]
 struct ElementConfig {
-
 }
 
 #[derive(Deserialize, Debug)]
@@ -42,6 +43,39 @@ struct GroupSceneConfig {
 #[derive(Deserialize, Debug)]
 struct PatternConfig {
     name: String
+}
+
+fn build_scene_element(config: &HashMap<String, Value>) -> Option<SceneElement> {
+    let target = match config.get("target")? {
+        Value::String(s) => s,
+        _ => return None,
+    };
+
+    let value = config.get("color")?;
+    let tokens: Vec<&str> = target.split(":").collect();
+    let fixture = tokens[0];
+    let element = tokens[1];
+
+    Some(SceneElement::new(fixture, element, value.clone()))
+}
+
+fn build_pattern(config: &mut HashMap<String, Value>, groups: &GroupMap) -> Option<Pattern> {
+    let target = match config.remove("target")? {
+        Value::String(s) => s,
+        _ => return None,
+    };
+
+    let group_name = &target[1..];  // todo Don't assume ASCII
+
+    let script = match config.remove("script")? {
+        Value::String(s) => s,
+        _ => return None,
+    };
+
+    let options = config.clone();
+    let num_group_elements = groups.get(group_name)?.len();
+
+    Some(Pattern::new(&script, group_name, num_group_elements, options))
 }
 
 pub fn build_from_config(config_file: &str) -> SceneManager {
@@ -60,40 +94,15 @@ pub fn build_from_config(config_file: &str) -> SceneManager {
     }).collect();
 
     let scenes = config.scenes.into_iter().map(|scene_config| {
-        let mut scene_elements = vec![];
+        let elements = scene_config.elements.unwrap_or(vec![]).iter()
+            .filter_map(|c| build_scene_element(c))
+            .collect();
 
-        if let Some(fixtures) = scene_config.fixtures {
-            for (fixture_name, fixture) in fixtures {
-                for (element_name, value) in fixture.elements {
-                    scene_elements.push(SceneElement::new(
-                        &fixture_name, &element_name, value
-                    ));
-                }
-            }
-        }
+        let patterns = scene_config.patterns.unwrap_or(vec![]).iter_mut()
+            .filter_map(|mut c| build_pattern(&mut c, &groups))
+            .collect();
 
-        let mut scene_patterns = vec![];
-
-        if let Some(scene_groups) = scene_config.groups {
-            for (group_name, group) in scene_groups {
-                let mut options = group.pattern;
-                let script = match options.remove("script").unwrap() {
-                    Value::String(s) => s,
-                    _ => { println!("Expected string"); continue },
-                };
-
-                let pattern = Pattern::new(
-                    &script,
-                    &group_name,
-                    groups.get(&group_name).unwrap().len(),
-                    options
-                );
-
-                scene_patterns.push(pattern);
-            }
-        }
-
-        Scene::new(&scene_config.name, 0.0, scene_elements, scene_patterns)
+        Scene::new(&scene_config.name, 0.0, elements, patterns)
     }).collect();
 
     SceneManager::new(

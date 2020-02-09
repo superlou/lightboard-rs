@@ -2,28 +2,53 @@ installation="installation.toml"
 
 [[scenes]]
 name = "A"
-fixtures.5.elements.1 = 0x4300ff
+
+  [[scenes.elements]]
+  target = "5:1"
+  color = 0x4300ff
 
 [[scenes]]
 name = "B"
-fixtures.5.elements.1 = 0xffffff
+
+  [[scenes.elements]]
+  target = "5:1"
+  color = 0xffffff
 
 [[scenes]]
 name = "Constant Pattern"
-groups.1.pattern = {script="constant.lua", color=0x5050F0}
+
+  [[scenes.patterns]]
+  target = "g1"
+  script = "constant.lua"
+  color = 0x5050F0
 
 [[scenes]]
 name = "Pulse Pattern"
-groups.1.pattern = {script="pulse.lua", color=0x50F040}
+
+  [[scenes.patterns]]
+  target = "g1"
+  script = "pulse.lua"
+  color = 0x50F040
 
 [[scenes]]
 name = "Rev. Pulse Pattern"
-groups.1.pattern = {script="pulse.lua", color=0xC0C0FF, reverse=true}
-groups.2.pattern = {script="random_strobe.lua"}
+
+  [[scenes.patterns]]
+  target = "g1"
+  script = "pulse.lua"
+  color = 0xC0C0FF
+  reverse = true
+
+  [[scenes.patterns]]
+  target = "g2"
+  script = "random_strobe.lua"
 
 [[scenes]]
 name = "White Light Pulse"
-groups.3.pattern = {script="pulse.lua"}
+
+  [[scenes.patterns]]
+  target = "g3"
+  script = "pulse.lua"
 
 [groups.1]
 elements = ["1:1", "1:2", "1:3", "1:4", "2:1", "2:2", "2:3", "2:4",
