@@ -20,27 +20,8 @@ struct SceneConfig {
 }
 
 #[derive(Deserialize, Debug)]
-struct FixtureConfig {
-    elements: HashMap<String, Value>,
-}
-
-#[derive(Deserialize, Debug)]
-struct ElementConfig {
-}
-
-#[derive(Deserialize, Debug)]
 struct GroupConfig {
     elements: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-struct GroupSceneConfig {
-    pattern: HashMap<String, Value>,
-}
-
-#[derive(Deserialize, Debug)]
-struct PatternConfig {
-    name: String
 }
 
 fn build_scene_element(config: &HashMap<String, Value>) -> Option<SceneElement> {
