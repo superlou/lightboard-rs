@@ -4,21 +4,21 @@ installation="installation.toml"
 name = "A"
 
   [[scenes.elements]]
-  target = "5:1"
+  target = "5:1:color"
   color = 0x4300ff
 
 [[scenes]]
 name = "B"
 
   [[scenes.elements]]
-  target = "5:1"
+  target = "5:1:color"
   color = 0xffffff
 
 [[scenes]]
 name = "Constant Pattern"
 
   [[scenes.patterns]]
-  target = "g1"
+  target = "g1:color"
   script = "constant.lua"
   color = 0x5050F0
 
@@ -26,7 +26,7 @@ name = "Constant Pattern"
 name = "Pulse Pattern"
 
   [[scenes.patterns]]
-  target = "g1"
+  target = "g1:color"
   script = "pulse.lua"
   color = 0x50F040
 
@@ -34,20 +34,20 @@ name = "Pulse Pattern"
 name = "Rev. Pulse Pattern"
 
   [[scenes.patterns]]
-  target = "g1"
+  target = "g1:color"
   script = "pulse.lua"
   color = 0xC0C0FF
   reverse = true
 
   [[scenes.patterns]]
-  target = "g2"
+  target = "g2:color"
   script = "random_strobe.lua"
 
 [[scenes]]
 name = "White Light Pulse"
 
   [[scenes.patterns]]
-  target = "g3"
+  target = "g3:dimmer"
   script = "pulse.lua"
 
 [groups.1]

@@ -17,8 +17,6 @@ struct SceneConfig {
     name: String,
     elements: Option<Vec<HashMap<String, Value>>>,
     patterns: Option<Vec<HashMap<String, Value>>>,
-    // fixtures: Option<HashMap<String, FixtureConfig>>,
-    // groups: Option<HashMap<String, GroupSceneConfig>>
 }
 
 #[derive(Deserialize, Debug)]
@@ -55,8 +53,9 @@ fn build_scene_element(config: &HashMap<String, Value>) -> Option<SceneElement> 
     let tokens: Vec<&str> = target.split(":").collect();
     let fixture = tokens[0];
     let element = tokens[1];
+    let property = tokens[2];
 
-    Some(SceneElement::new(fixture, element, value.clone()))
+    Some(SceneElement::new(fixture, element, property, value))
 }
 
 fn build_pattern(config: &mut HashMap<String, Value>, groups: &GroupMap) -> Option<Pattern> {
@@ -64,6 +63,10 @@ fn build_pattern(config: &mut HashMap<String, Value>, groups: &GroupMap) -> Opti
         Value::String(s) => s,
         _ => return None,
     };
+
+    let tokens: Vec<&str> = target.split(":").collect();
+    let target = tokens[0];
+    let property = tokens[1];
 
     let group_name = &target[1..];  // todo Don't assume ASCII
 
@@ -75,7 +78,7 @@ fn build_pattern(config: &mut HashMap<String, Value>, groups: &GroupMap) -> Opti
     let options = config.clone();
     let num_group_elements = groups.get(group_name)?.len();
 
-    Some(Pattern::new(&script, group_name, num_group_elements, options))
+    Some(Pattern::new(&script, group_name, property, num_group_elements, options))
 }
 
 fn build_group_elements(config: &GroupConfig) -> Vec<GroupElement> {

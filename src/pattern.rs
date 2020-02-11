@@ -6,6 +6,7 @@ use rlua::{Lua, Function, Table, ToLua, Context};
 pub struct Pattern {
     lua: Lua,
     group: String,
+    property: String,
     script_name: String,
 }
 
@@ -13,6 +14,7 @@ impl fmt::Debug for Pattern {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Pattern")
             .field("group", &self.group)
+            .field("property", &self.property)
             .field("script_name", &self.script_name)
             .finish()
     }
@@ -40,7 +42,7 @@ fn toml_to_lua<'a>(toml_value: &toml::Value, ctx: Context<'a>) -> rlua::Result<r
 }
 
 impl Pattern {
-    pub fn new(script_name: &str, group: &str, element_count: usize,
+    pub fn new(script_name: &str, group: &str, property: &str, element_count: usize,
                options: HashMap<String, toml::Value>) -> Self
     {
         let script = "patterns/".to_owned() + script_name;
@@ -84,6 +86,7 @@ impl Pattern {
         Self {
             lua: lua,
             group: group.to_owned(),
+            property: property.to_owned(),
             script_name: script_name.to_owned(),
         }
     }
@@ -124,7 +127,7 @@ mod tests {
     fn test_pattern_creation() {
         let mut options: HashMap<String, toml::Value> = HashMap::new();
         options.insert("color".to_owned(), 0x123456.into());
-        let mut p = Pattern::new("constant.lua", "group1", 2, options);
+        let mut p = Pattern::new("constant.lua", "group1", "color", 2, options);
         assert_eq!([0x123456, 0x123456], p.update().as_slice());
     }
 }

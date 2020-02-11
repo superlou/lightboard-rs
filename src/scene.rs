@@ -33,15 +33,17 @@ pub struct Scene {
 pub struct SceneElement {
     fixture: String,
     element: String,
+    property: String,
     value: Value,
 }
 
 impl SceneElement {
-    pub fn new(fixture: &str, element: &str, value: Value) -> Self {
+    pub fn new(fixture: &str, element: &str, property: &str, value: &Value) -> Self {
         Self {
             fixture: fixture.to_owned(),
             element: element.to_owned(),
-            value: value
+            property: property.to_owned(),
+            value: value.clone()
         }
     }
 }
