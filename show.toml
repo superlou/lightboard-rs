@@ -1,52 +1,52 @@
 installation="installation.toml"
 
-[[scenes]]
+[[effects]]
 name = "A"
 
-  [[scenes.elements]]
+  [[effects.elements]]
   target = "5:1:color"
   color = 0x4300ff
 
-[[scenes]]
+[[effects]]
 name = "B"
 
-  [[scenes.elements]]
+  [[effects.elements]]
   target = "5:1:color"
   color = 0xffffff
 
-[[scenes]]
+[[effects]]
 name = "Constant Pattern"
 
-  [[scenes.patterns]]
+  [[effects.patterns]]
   target = "g1:color"
   script = "constant.lua"
   color = 0x5050F0
 
-[[scenes]]
+[[effects]]
 name = "Pulse Pattern"
 
-  [[scenes.patterns]]
+  [[effects.patterns]]
   target = "g1:color"
   script = "pulse.lua"
   color = 0x50F040
 
-[[scenes]]
+[[effects]]
 name = "Rev. Pulse Pattern"
 
-  [[scenes.patterns]]
+  [[effects.patterns]]
   target = "g1:color"
   script = "pulse.lua"
   color = 0xC0C0FF
   reverse = true
 
-  [[scenes.patterns]]
+  [[effects.patterns]]
   target = "g2:color"
   script = "random_strobe.lua"
 
-[[scenes]]
+[[effects]]
 name = "White Light Pulse"
 
-  [[scenes.patterns]]
+  [[effects.patterns]]
   target = "g3:dimmer"
   script = "pulse.lua"
 

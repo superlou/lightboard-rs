@@ -8,13 +8,13 @@ use std::sync::mpsc;
 use crate::imgui_wrapper::ImGuiWrapper;
 use crate::installation::Installation;
 use crate::fixture::{Fixture, ElementKind};
-use crate::scene::SceneManager;
+use crate::effect::EffectPool;
 use crate::hitbox::HitboxManager;
 
 const INITIAL_WIDTH: f32 = 800.0;
 const INITIAL_HEIGHT: f32 = 600.0;
 
-pub fn run_gui(installation: Installation, scene_manager: SceneManager,
+pub fn run_gui(installation: Installation, effect_pool: EffectPool,
                dmx_send: mpsc::Sender<Vec<u8>>)
 {
     let (mut ctx, mut event_loop) = ContextBuilder::new("my_gui", "Author")
@@ -31,7 +31,7 @@ pub fn run_gui(installation: Installation, scene_manager: SceneManager,
         .build()
         .expect("Could not create ggez context!");
 
-    let mut gui = Visualizer::new(&mut ctx, 1.0, installation, scene_manager, dmx_send);
+    let mut gui = Visualizer::new(&mut ctx, 1.0, installation, effect_pool, dmx_send);
 
     match event::run(&mut ctx, &mut event_loop, &mut gui) {
         Ok(_) => println!("Exited GUI"),
@@ -50,7 +50,7 @@ struct Visualizer {
     imgui_wrapper: ImGuiWrapper,
     hidpi_factor: f32,
     installation: Installation,
-    scene_manager: SceneManager,
+    effect_pool: EffectPool,
     dmx_send: mpsc::Sender<Vec<u8>>,
     dmx_chain: Vec<u8>,
     selected: Vec<String>,
@@ -62,14 +62,14 @@ struct Visualizer {
 
 impl Visualizer {
     pub fn new(ctx: &mut Context, hidpi_factor: f32,
-               installation: Installation, scene_manager: SceneManager,
+               installation: Installation, effect_pool: EffectPool,
                dmx_send: mpsc::Sender<Vec<u8>>) -> Self
     {
         let mut visualizer = Self {
             imgui_wrapper: ImGuiWrapper::new(ctx),
             hidpi_factor: hidpi_factor,
             installation: installation,
-            scene_manager: scene_manager,
+            effect_pool: effect_pool,
             dmx_send: dmx_send,
             dmx_chain: vec![],
             selected: vec![],
@@ -219,7 +219,7 @@ impl EventHandler for Visualizer {
             return Ok(())
         }
 
-        self.scene_manager.apply_to(&mut self.installation);
+        self.effect_pool.apply_to(&mut self.installation);
 
         let chain = self.installation.build_dmx_chain();
         self.dmx_chain = chain.clone();
@@ -234,7 +234,7 @@ impl EventHandler for Visualizer {
         graphics::clear(ctx, graphics::BLACK);
         render_installation(ctx, &self.installation, &self.selected,
                             &self.installation_view_origin, self.installation_view_scale);
-        self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.scene_manager,
+        self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.effect_pool,
                                   &self.dmx_status, &self.dmx_chain);
         graphics::present(ctx)
     }

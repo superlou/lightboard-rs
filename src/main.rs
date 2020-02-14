@@ -6,35 +6,35 @@ mod gui;
 mod imgui_wrapper;
 mod installation;
 mod fixture;
-mod scene;
+mod effect;
 mod hitbox;
 mod pattern;
 mod light;
 mod installation_loader;
-mod scene_manager_loader;
+mod effect_pool_loader;
 
 use std::{thread};
 use std::sync::mpsc;
 use clap::{Arg, App};
 use installation::Installation;
-use scene::SceneManager;
+use effect::EffectPool;
 
 fn main() {
     let matches = App::new("Lightboard-rs")
                     .about("Rust DMX lighting controller")
-                    .arg(Arg::with_name("scenes")
-                            .help("Name of scenes file"))
+                    .arg(Arg::with_name("show")
+                            .help("Name of show file"))
                     .get_matches();
 
     println!("Started");
 
     let (send, recv) = mpsc::channel();
 
-    let scenes_file = matches.value_of("scenes").unwrap_or("scenes.toml");
-    let scene_manager = SceneManager::new_from_config(scenes_file);
-    let installation = Installation::new_from_config(&scene_manager.installation());
+    let show_file = matches.value_of("show").unwrap_or("show.toml");
+    let effect_pool = EffectPool::new_from_config(show_file);
+    let installation = Installation::new_from_config(&effect_pool.installation());
 
     thread::spawn(move || { dmx_control::update(recv) });
 
-    gui::run_gui(installation, scene_manager, send);
+    gui::run_gui(installation, effect_pool, send);
 }

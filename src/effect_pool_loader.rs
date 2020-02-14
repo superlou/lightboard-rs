@@ -2,18 +2,18 @@ use std::collections::HashMap;
 use toml::value::Value;
 use serde::Deserialize;
 use std::fs::read_to_string;
-use crate::scene::{SceneManager, Scene, GroupMap, GroupElement, SceneElement};
+use crate::effect::{EffectPool, Effect, GroupMap, GroupElement, EffectElement};
 use crate::pattern::Pattern;
 
 #[derive(Deserialize, Debug)]
-struct SceneManagerConfig {
+struct EffectPoolConfig {
     installation: Option<String>,
-    scenes: Vec<SceneConfig>,
+    effects: Vec<EffectConfig>,
     groups: HashMap<String, GroupConfig>,
 }
 
 #[derive(Deserialize, Debug)]
-struct SceneConfig {
+struct EffectConfig {
     name: String,
     elements: Option<Vec<HashMap<String, Value>>>,
     patterns: Option<Vec<HashMap<String, Value>>>,
@@ -24,7 +24,7 @@ struct GroupConfig {
     elements: Vec<String>,
 }
 
-fn build_scene_element(config: &HashMap<String, Value>) -> Option<SceneElement> {
+fn build_effect_element(config: &HashMap<String, Value>) -> Option<EffectElement> {
     let target = match config.get("target")? {
         Value::String(s) => s,
         _ => return None,
@@ -36,7 +36,7 @@ fn build_scene_element(config: &HashMap<String, Value>) -> Option<SceneElement> 
     let element = tokens[1];
     let property = tokens[2];
 
-    Some(SceneElement::new(fixture, element, property, value))
+    Some(EffectElement::new(fixture, element, property, value))
 }
 
 fn build_pattern(config: &mut HashMap<String, Value>, groups: &GroupMap) -> Option<Pattern> {
@@ -72,27 +72,27 @@ fn build_group_elements(config: &GroupConfig) -> Vec<GroupElement> {
     }).collect()
 }
 
-pub fn build_from_config(config_file: &str) -> SceneManager {
-    let config: SceneManagerConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
+pub fn build_from_config(config_file: &str) -> EffectPool {
+    let config: EffectPoolConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
 
     let groups: GroupMap = config.groups.into_iter().map(|(name, config)| {
         (name, build_group_elements(&config))
     }).collect();
 
-    let scenes = config.scenes.into_iter().map(|scene_config| {
-        let elements = scene_config.elements.unwrap_or(vec![]).iter()
-            .filter_map(|c| build_scene_element(c))
+    let effects = config.effects.into_iter().map(|effect_config| {
+        let elements = effect_config.elements.unwrap_or(vec![]).iter()
+            .filter_map(|c| build_effect_element(c))
             .collect();
 
-        let patterns = scene_config.patterns.unwrap_or(vec![]).iter_mut()
+        let patterns = effect_config.patterns.unwrap_or(vec![]).iter_mut()
             .filter_map(|mut c| build_pattern(&mut c, &groups))
             .collect();
 
-        Scene::new(&scene_config.name, 0.0, elements, patterns)
+        Effect::new(&effect_config.name, 0.0, elements, patterns)
     }).collect();
 
-    SceneManager::new(
-        scenes, groups,
+    EffectPool::new(
+        effects, groups,
         config.installation.unwrap_or("installation.toml".to_owned()),
     )
 }

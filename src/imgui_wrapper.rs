@@ -5,7 +5,7 @@ use gfx_core::memory::Typed;
 use gfx_core::handle::RenderTargetView;
 use gfx_device_gl;
 use ggez::{graphics, Context};
-use crate::scene::SceneManager;
+use crate::effect::EffectPool;
 use crate::gui::DmxStatus;
 
 #[derive(Copy, Clone, PartialEq, Debug, Default)]
@@ -62,7 +62,7 @@ impl ImGuiWrapper {
     }
 
     pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32,
-                  scene_manager: &mut SceneManager, dmx_status: &DmxStatus, dmx_chain: &Vec<u8>)
+                  effect_pool: &mut EffectPool, dmx_status: &DmxStatus, dmx_chain: &Vec<u8>)
     {
         self.update_mouse();
 
@@ -78,12 +78,12 @@ impl ImGuiWrapper {
 
         let ui = self.imgui.frame();
 
-        imgui::Window::new(im_str!("Scene Manager"))
+        imgui::Window::new(im_str!("Effect Pool"))
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
           .position([100.0, 100.0], imgui::Condition::FirstUseEver)
           .build(&ui, || {
-            for scene in scene_manager.scenes_mut().iter_mut() {
-              ui.drag_float(&ImString::new(scene.name().clone()), &mut scene.strength_mut())
+            for effect in effect_pool.effects_mut().iter_mut() {
+              ui.drag_float(&ImString::new(effect.name().clone()), &mut effect.strength_mut())
                 .min(0.0)
                 .max(1.0)
                 .speed(0.01)

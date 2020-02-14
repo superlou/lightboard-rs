@@ -15,6 +15,6 @@ Who needs a GUI when there's text-files. This is partially intentional: it would
 The configuration files are:
 
 * installation.toml - Defines the fixed aspects of your venue with lighting fixutures
-* scenes.toml - Defines various scenes you can mix together
+* show.toml - Defines the show configuration
 * patterns/xyz.lua - Lua scripts that control animated patterns like strobes and chases
 * fixtures/xyz.toml - Defines each hardware fixture made up of elements with information on DMX channels
