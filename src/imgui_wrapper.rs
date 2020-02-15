@@ -30,25 +30,26 @@ fn effect_pool_ui(ui: &imgui::Ui, effect_pool: &mut EffectPool) {
     let mut i = 0;
 
     for effect in effect_pool.effects_mut().iter_mut() {
-      let id = im_str!("##{}", i);
-      imgui::VerticalSlider::new(&id, [12.0, 80.0], 0.0..=1.0)
-        .display_format(im_str!(""))
-        .build(&ui, effect.strength_mut());
+        let id = im_str!("##{}", i);
 
-      ui.same_line(24.0);
+        imgui::VerticalSlider::new(&id, [12.0, 80.0], 0.0..=1.0)
+            .display_format(im_str!(""))
+            .build(&ui, effect.strength_mut());
 
-      let token = ui.begin_group();
-      ui.text(&ImString::new(effect.name().clone()));
-      ui.text(im_str!("{},{}", i / num_columns, i));
-      token.end(&ui);
+        ui.same_line(24.0);
+
+        let token = ui.begin_group();
+        ui.text(&ImString::new(effect.name().clone()));
+        ui.text(im_str!("{},{}", i / num_columns, i));
+        token.end(&ui);
 
 
-      if ui.current_column_index() == (num_columns - 1) {
-        ui.separator();
-      }
+        if ui.current_column_index() == (num_columns - 1) {
+            ui.separator();
+        }
 
-      i += 1;
-      ui.next_column();
+        i += 1;
+        ui.next_column();
     }
 }
 
