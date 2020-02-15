@@ -23,6 +23,35 @@ pub struct ImGuiWrapper {
     show_popup: bool,
 }
 
+fn effect_pool_ui(ui: &imgui::Ui, effect_pool: &mut EffectPool) {
+    let num_columns = 5;
+    ui.columns(num_columns, im_str!("test"), true);
+
+    let mut i = 0;
+
+    for effect in effect_pool.effects_mut().iter_mut() {
+      let id = im_str!("##{}", i);
+      imgui::VerticalSlider::new(&id, [12.0, 80.0], 0.0..=1.0)
+        .display_format(im_str!(""))
+        .build(&ui, effect.strength_mut());
+
+      ui.same_line(24.0);
+
+      let token = ui.begin_group();
+      ui.text(&ImString::new(effect.name().clone()));
+      ui.text(im_str!("{},{}", i / num_columns, i));
+      token.end(&ui);
+
+
+      if ui.current_column_index() == (num_columns - 1) {
+        ui.separator();
+      }
+
+      i += 1;
+      ui.next_column();
+    }
+}
+
 impl ImGuiWrapper {
     pub fn new(ctx: &mut Context) -> Self {
       let mut imgui = imgui::Context::create();
@@ -81,34 +110,7 @@ impl ImGuiWrapper {
         imgui::Window::new(im_str!("Effect Pool"))
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
           .position([100.0, 100.0], imgui::Condition::FirstUseEver)
-          .build(&ui, || {
-            let num_columns = 5;
-            ui.columns(num_columns, im_str!("test"), true);
-
-            let mut i = 0;
-
-            for effect in effect_pool.effects_mut().iter_mut() {
-              let id = im_str!("##{}", i);
-              imgui::VerticalSlider::new(&id, [12.0, 80.0], 0.0..=1.0)
-                .display_format(im_str!(""))
-                .build(&ui, effect.strength_mut());
-
-              ui.same_line(24.0);
-
-              let token = ui.begin_group();
-              ui.text(&ImString::new(effect.name().clone()));
-              ui.text(im_str!("{},{}", i / num_columns, i));
-              token.end(&ui);
-
-
-              if ui.current_column_index() == (num_columns - 1) {
-                ui.separator();
-              }
-
-              i += 1;
-              ui.next_column();
-            }
-        });
+          .build(&ui, || { effect_pool_ui(&ui, effect_pool) });
 
         imgui::Window::new(im_str!("DMX Channels"))
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
