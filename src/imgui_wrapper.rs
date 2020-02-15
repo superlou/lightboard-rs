@@ -1,5 +1,5 @@
 use std::time::Instant;
-use imgui::{im_str, ImString};
+use imgui::{im_str, ImString, StyleVar, StyleColor};
 use imgui_gfx_renderer::{Shaders, Renderer};
 use gfx_core::memory::Typed;
 use gfx_core::handle::RenderTargetView;
@@ -32,11 +32,20 @@ fn effect_pool_ui(ui: &imgui::Ui, effect_pool: &mut EffectPool) {
     for effect in effect_pool.effects_mut().iter_mut() {
         let id = im_str!("##{}", i);
 
+        let border_token = ui.push_style_var(StyleVar::FrameBorderSize(1.0));
+
+        let strength = effect.strength();
+        let strength_color = [strength, strength, strength, strength];
+        let color_token = ui.push_style_color(StyleColor::FrameBg, strength_color);
+
         imgui::VerticalSlider::new(&id, [12.0, 80.0], 0.0..=1.0)
             .display_format(im_str!(""))
             .build(&ui, effect.strength_mut());
 
-        ui.same_line(24.0);
+        color_token.pop(&ui);
+        border_token.pop(&ui);
+
+        ui.same_line(26.0);
 
         let token = ui.begin_group();
         ui.text(&ImString::new(effect.name().clone()));
@@ -77,7 +86,6 @@ impl ImGuiWrapper {
 
       let renderer = Renderer::init(&mut imgui, &mut *factory, shaders).unwrap();
 
-      // Create instace
       Self {
         imgui: imgui,
         renderer: renderer,
@@ -107,6 +115,7 @@ impl ImGuiWrapper {
         self.imgui.io_mut().delta_time = delta_s;
 
         let ui = self.imgui.frame();
+        let window_rounding = ui.push_style_var(StyleVar::WindowRounding(0.0));
 
         imgui::Window::new(im_str!("Effect Pool"))
           .size([300.0, 300.0], imgui::Condition::FirstUseEver)
@@ -125,6 +134,8 @@ impl ImGuiWrapper {
                 ui.text(im_str!("{}: {}", i + 1, channel));
             }
         });
+
+        window_rounding.pop(&ui);
 
         let (factory, _, encoder, _, render_target) = graphics::gfx_objects(ctx);
         let draw_data = ui.render();

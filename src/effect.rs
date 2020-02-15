@@ -131,6 +131,10 @@ impl Effect {
         &self.name
     }
 
+    pub fn strength(&self) -> f32 {
+        self.strength
+    }
+
     pub fn strength_mut(&mut self) -> &mut f32 {
         &mut self.strength
     }
