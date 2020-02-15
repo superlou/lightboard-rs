@@ -23,6 +23,8 @@ pub struct ImGuiWrapper {
     show_popup: bool,
 }
 
+const ROW_KEY_MAP: [&str; 6] = ["A", "B", "C", "D", "E", "F"];
+
 fn effect_pool_ui(ui: &imgui::Ui, effect_pool: &mut EffectPool) {
     let num_columns = 5;
     ui.columns(num_columns, im_str!("test"), true);
@@ -37,6 +39,8 @@ fn effect_pool_ui(ui: &imgui::Ui, effect_pool: &mut EffectPool) {
         let strength = effect.strength();
         let strength_color = [strength, strength, strength, strength];
         let color_token = ui.push_style_color(StyleColor::FrameBg, strength_color);
+        let hover_token = ui.push_style_color(StyleColor::FrameBgHovered, strength_color);
+        let active_token = ui.push_style_color(StyleColor::FrameBgActive, strength_color);
 
         imgui::VerticalSlider::new(&id, [12.0, 80.0], 0.0..=1.0)
             .display_format(im_str!(""))
@@ -44,12 +48,17 @@ fn effect_pool_ui(ui: &imgui::Ui, effect_pool: &mut EffectPool) {
 
         color_token.pop(&ui);
         border_token.pop(&ui);
+        hover_token.pop(&ui);
+        active_token.pop(&ui);
 
         ui.same_line(26.0);
 
         let token = ui.begin_group();
         ui.text(&ImString::new(effect.name().clone()));
-        ui.text(im_str!("{},{}", i / num_columns, i));
+        let key = im_str!("{}{}",
+                          ROW_KEY_MAP[i / num_columns as usize],
+                          i % num_columns as usize + 1);
+        ui.text(key);
         token.end(&ui);
 
 
