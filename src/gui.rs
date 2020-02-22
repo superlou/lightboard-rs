@@ -270,9 +270,6 @@ impl EventHandler for Visualizer {
 
     fn key_down_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymods: KeyMods, _repeat: bool) {
         match keycode {
-            KeyCode::P => {
-                self.imgui_wrapper.open_popup();
-            }
             _ => (),
         }
     }

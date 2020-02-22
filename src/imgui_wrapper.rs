@@ -20,7 +20,6 @@ pub struct ImGuiWrapper {
     pub renderer: Renderer<gfx_core::format::Rgba8, gfx_device_gl::Resources>,
     last_frame: Instant,
     mouse_state: MouseState,
-    show_popup: bool,
 }
 
 const ROW_KEY_MAP: [&str; 6] = ["A", "B", "C", "D", "E", "F"];
@@ -99,7 +98,6 @@ impl ImGuiWrapper {
         renderer: renderer,
         last_frame: Instant::now(),
         mouse_state: MouseState::default(),
-        show_popup: false,
       }
     }
 
@@ -180,13 +178,5 @@ impl ImGuiWrapper {
 
     pub fn update_mouse_down(&mut self, pressed: (bool, bool, bool)) {
       self.mouse_state.pressed = pressed;
-
-      if pressed.0 {
-        self.show_popup = false;
-      }
-    }
-
-    pub fn open_popup(&mut self) {
-      self.show_popup = true;
     }
 }
