@@ -11,7 +11,7 @@ mod hitbox;
 mod pattern;
 mod light;
 mod installation_loader;
-mod effect_pool_loader;
+mod show_loader;
 
 use std::{thread};
 use std::sync::mpsc;

@@ -27,47 +27,46 @@ const ROW_KEY_MAP: [&str; 6] = ["A", "B", "C", "D", "E", "F"];
 
 fn effect_pool_ui(ui: &imgui::Ui, effect_pool: &mut EffectPool) {
     let num_columns = 5;
-    ui.columns(num_columns, im_str!("test"), true);
+    let num_rows = 2;
 
-    let mut i = 0;
+    for row in 0..num_rows {
+        ui.columns(num_columns, im_str!("test"), true);
 
-    for effect in effect_pool.effects_mut().iter_mut() {
-        let id = im_str!("##{}", i);
+        for col in 0..num_columns {
+            let key = format!("{}{}", ROW_KEY_MAP[row], col + 1);
+            if let Some(effect) = effect_pool.get_effect_by_key(&key) {
+                let id = im_str!("##{},{}", row, col);
 
-        let border_token = ui.push_style_var(StyleVar::FrameBorderSize(1.0));
+                let border_token = ui.push_style_var(StyleVar::FrameBorderSize(1.0));
 
-        let strength = effect.strength();
-        let strength_color = [strength, strength, strength, strength];
-        let color_token = ui.push_style_color(StyleColor::FrameBg, strength_color);
-        let hover_token = ui.push_style_color(StyleColor::FrameBgHovered, strength_color);
-        let active_token = ui.push_style_color(StyleColor::FrameBgActive, strength_color);
+                let strength = effect.strength();
+                let strength_color = [strength, strength, strength, strength];
+                let color_token = ui.push_style_color(StyleColor::FrameBg, strength_color);
+                let hover_token = ui.push_style_color(StyleColor::FrameBgHovered, strength_color);
+                let active_token = ui.push_style_color(StyleColor::FrameBgActive, strength_color);
 
-        imgui::VerticalSlider::new(&id, [12.0, 80.0], 0.0..=1.0)
-            .display_format(im_str!(""))
-            .build(&ui, effect.strength_mut());
+                imgui::VerticalSlider::new(&id, [12.0, 80.0], 0.0..=1.0)
+                    .display_format(im_str!(""))
+                    .build(&ui, effect.strength_mut());
 
-        color_token.pop(&ui);
-        border_token.pop(&ui);
-        hover_token.pop(&ui);
-        active_token.pop(&ui);
+                color_token.pop(&ui);
+                border_token.pop(&ui);
+                hover_token.pop(&ui);
+                active_token.pop(&ui);
 
-        ui.same_line(26.0);
+                ui.same_line(26.0);
 
-        let token = ui.begin_group();
-        ui.text(&ImString::new(effect.name().clone()));
-        let key = im_str!("{}{}",
-                          ROW_KEY_MAP[i / num_columns as usize],
-                          i % num_columns as usize + 1);
-        ui.text(key);
-        token.end(&ui);
+                let token = ui.begin_group();
+                ui.text(&ImString::new(effect.name().clone()));
+                let key = im_str!("{}{}", ROW_KEY_MAP[row as usize], col + 1);
+                ui.text(key);
+                token.end(&ui);
+            }
 
-
-        if ui.current_column_index() == (num_columns - 1) {
-            ui.separator();
+            ui.next_column();
         }
-
-        i += 1;
-        ui.next_column();
+        ui.columns(1, im_str!("test"), true);
+        ui.separator();
     }
 }
 

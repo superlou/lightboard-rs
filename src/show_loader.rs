@@ -6,10 +6,11 @@ use crate::effect::{EffectPool, Effect, GroupMap, GroupElement, EffectElement};
 use crate::pattern::Pattern;
 
 #[derive(Deserialize, Debug)]
-struct EffectPoolConfig {
+struct ShowConfig {
     installation: Option<String>,
     effects: Vec<EffectConfig>,
     groups: HashMap<String, GroupConfig>,
+    pool: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -73,7 +74,7 @@ fn build_group_elements(config: &GroupConfig) -> Vec<GroupElement> {
 }
 
 pub fn build_from_config(config_file: &str) -> EffectPool {
-    let config: EffectPoolConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
+    let config: ShowConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
 
     let groups: GroupMap = config.groups.into_iter().map(|(name, config)| {
         (name, build_group_elements(&config))
@@ -91,8 +92,14 @@ pub fn build_from_config(config_file: &str) -> EffectPool {
         Effect::new(&effect_config.name, 0.0, elements, patterns)
     }).collect();
 
-    EffectPool::new(
+    let mut pool = EffectPool::new(
         effects, groups,
         config.installation.unwrap_or("installation.toml".to_owned()),
-    )
+    );
+
+    for (key, effect_name) in config.pool.iter() {
+        pool.set_key(key, effect_name)
+    }
+
+    pool
 }

@@ -4,7 +4,7 @@ use crate::installation::Installation;
 use crate::pattern::Pattern;
 use crate::light::Color;
 use crate::fixture::{Element, ElementKind};
-use crate::effect_pool_loader;
+use crate::show_loader;
 
 pub type GroupMap = HashMap<String, Vec<GroupElement>>;
 
@@ -13,6 +13,7 @@ pub struct EffectPool {
     effects: Vec<Effect>,
     groups: GroupMap,
     installation: String,
+    key_map: HashMap<String, String>,
 }
 
 #[derive(Debug)]
@@ -50,11 +51,20 @@ impl EffectElement {
 
 impl EffectPool {
     pub fn new(effects: Vec<Effect>, groups: GroupMap, installation: String) -> Self {
-        Self { effects, groups, installation }
+        Self { effects, groups, installation, key_map: HashMap::new() }
+    }
+
+    pub fn set_key(&mut self, key: &str, effect_name: &str) {
+        self.key_map.insert(key.to_owned(), effect_name.to_owned());
+    }
+
+    pub fn get_effect_by_key(&mut self, key: &str) -> Option<&mut Effect> {
+        let name = self.key_map.get(key)?;
+        self.effects.iter_mut().find(|effect| &effect.name == name)
     }
 
     pub fn new_from_config(config_file: &str) -> Self {
-        effect_pool_loader::build_from_config(config_file)
+        show_loader::build_from_config(config_file)
     }
 
     pub fn apply_to(&mut self, installation: &mut Installation) {
