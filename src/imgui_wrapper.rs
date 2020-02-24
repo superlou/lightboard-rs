@@ -106,7 +106,8 @@ impl ImGuiWrapper {
     }
 
     pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32,
-                  effect_pool: &mut EffectPool, dmx_status: &DmxStatus, dmx_chain: &Vec<u8>)
+                  effect_pool: &mut EffectPool, dmx_status: &DmxStatus, dmx_chain: &Vec<u8>,
+                  command_input_buffer: &str)
     {
         self.update_mouse();
 
@@ -139,6 +140,14 @@ impl ImGuiWrapper {
             for (i, channel) in dmx_chain.iter().enumerate() {
                 ui.text(im_str!("{}: {}", i + 1, channel));
             }
+        });
+
+        imgui::Window::new(im_str!("Command"))
+            .size([300.0, 300.0], imgui::Condition::FirstUseEver)
+            .position([100.0, 300.0], imgui::Condition::FirstUseEver)
+            .build(&ui, || {
+                let buffer = ImString::new(command_input_buffer.to_owned());
+                ui.text(&buffer);
         });
 
         window_rounding.pop(&ui);

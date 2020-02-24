@@ -10,6 +10,8 @@ use crate::installation::Installation;
 use crate::fixture::{Fixture, ElementKind};
 use crate::effect::EffectPool;
 use crate::hitbox::HitboxManager;
+use crate::ggez_util::mutate_from_key;
+use crate::command_input_parser;
 
 const INITIAL_WIDTH: f32 = 800.0;
 const INITIAL_HEIGHT: f32 = 600.0;
@@ -58,6 +60,7 @@ struct Visualizer {
     installation_view_origin: Point2<f32>,
     installation_view_scale: f32,
     dmx_status: DmxStatus,
+    command_input_buffer: String,
 }
 
 impl Visualizer {
@@ -77,6 +80,7 @@ impl Visualizer {
             installation_view_origin: Point2::new(10.0, 10.0),
             installation_view_scale: 40.0,
             dmx_status: DmxStatus::Unknown,
+            command_input_buffer: String::new(),
         };
 
         visualizer.update_hitboxes();
@@ -219,6 +223,7 @@ impl EventHandler for Visualizer {
             return Ok(())
         }
 
+        self.effect_pool.run_commands();
         self.effect_pool.apply_to(&mut self.installation);
 
         let chain = self.installation.build_dmx_chain();
@@ -235,7 +240,8 @@ impl EventHandler for Visualizer {
         render_installation(ctx, &self.installation, &self.selected,
                             &self.installation_view_origin, self.installation_view_scale);
         self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.effect_pool,
-                                  &self.dmx_status, &self.dmx_chain);
+                                  &self.dmx_status, &self.dmx_chain,
+                                  &mut self.command_input_buffer);
         graphics::present(ctx)
     }
 
@@ -269,8 +275,15 @@ impl EventHandler for Visualizer {
     }
 
     fn key_down_event(&mut self, _ctx: &mut Context, keycode: KeyCode, _keymods: KeyMods, _repeat: bool) {
+        mutate_from_key(&mut self.command_input_buffer, keycode);
+
         match keycode {
-            _ => (),
+            KeyCode::Return | KeyCode::NumpadEnter => {
+                let commands = command_input_parser::parse(&self.command_input_buffer);
+                self.effect_pool.add_commands(commands);
+                self.command_input_buffer.clear();
+            },
+            _ => {},
         }
     }
 }

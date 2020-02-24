@@ -14,6 +14,18 @@ pub struct EffectPool {
     groups: GroupMap,
     installation: String,
     key_map: HashMap<String, String>,
+    command_queue: Vec<Command>
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub enum Action {
+    Toggle
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Command {
+    pub key: String,
+    pub action: Action,
 }
 
 #[derive(Debug)]
@@ -51,7 +63,13 @@ impl EffectElement {
 
 impl EffectPool {
     pub fn new(effects: Vec<Effect>, groups: GroupMap, installation: String) -> Self {
-        Self { effects, groups, installation, key_map: HashMap::new() }
+        Self {
+            effects,
+            groups,
+            installation,
+            key_map: HashMap::new(),
+            command_queue: vec![],
+        }
     }
 
     pub fn set_key(&mut self, key: &str, effect_name: &str) {
@@ -81,6 +99,32 @@ impl EffectPool {
 
     pub fn effects_mut(&mut self) -> &mut Vec<Effect> {
         &mut self.effects
+    }
+
+    pub fn add_commands(&mut self, mut commands: Vec<Command>) {
+        self.command_queue.append(&mut commands);
+    }
+
+    pub fn run_commands(&mut self) {
+        // todo This clone will become a problem when we want to mutate the
+        // state of commands that last more than one "run" in the future.
+        let queue = self.command_queue.clone();
+
+        for command in queue.iter() {
+            if let Some(effect) = self.get_effect_by_key(&command.key) {
+                match command.action {
+                    Action::Toggle => {
+                        if effect.strength() > 0.0 {
+                            effect.set_strength(0.0)
+                        } else {
+                            effect.set_strength(1.0)
+                        }
+                    },
+                }
+            }
+        }
+
+        self.command_queue.clear();
     }
 }
 
@@ -147,6 +191,10 @@ impl Effect {
 
     pub fn strength_mut(&mut self) -> &mut f32 {
         &mut self.strength
+    }
+
+    pub fn set_strength(&mut self, value: f32) {
+        self.strength = value;
     }
 }
 

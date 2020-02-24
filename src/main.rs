@@ -12,6 +12,8 @@ mod pattern;
 mod light;
 mod installation_loader;
 mod show_loader;
+mod ggez_util;
+mod command_input_parser;
 
 use std::{thread};
 use std::sync::mpsc;
