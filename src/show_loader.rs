@@ -2,8 +2,10 @@ use std::collections::HashMap;
 use toml::value::Value;
 use serde::Deserialize;
 use std::fs::read_to_string;
+use std::fmt;
 use crate::effect::{EffectPool, Effect, GroupMap, GroupElement, EffectElement};
 use crate::pattern::Pattern;
+use crate::cue::CueList;
 
 #[derive(Deserialize, Debug)]
 struct ShowConfig {
@@ -11,6 +13,7 @@ struct ShowConfig {
     effects: Vec<EffectConfig>,
     groups: HashMap<String, GroupConfig>,
     pool: HashMap<String, String>,
+    cues: Vec<CueConfig>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -23,6 +26,12 @@ struct EffectConfig {
 #[derive(Deserialize, Debug)]
 struct GroupConfig {
     elements: Vec<String>,
+}
+
+#[derive(Deserialize, Debug)]
+struct CueConfig {
+    name: Option<String>,
+    command: String,
 }
 
 fn build_effect_element(config: &HashMap<String, Value>) -> Option<EffectElement> {
@@ -102,4 +111,20 @@ pub fn build_from_config(config_file: &str) -> EffectPool {
     }
 
     pool
+}
+
+pub fn build_cue_list_from_config(config_file: &str) -> CueList {
+    let config: ShowConfig = toml::from_str(&read_to_string(config_file).unwrap()).unwrap();
+
+    let mut cue_list = CueList::new();
+
+    for (i, config) in config.cues.iter().enumerate() {
+        let name = match &config.name {
+            Some(s) => format!("{} {}", i + 1, s),
+            None => format!("{}", i + 1),
+        };
+        cue_list.add(&name, &config.command);
+    }
+
+    cue_list
 }

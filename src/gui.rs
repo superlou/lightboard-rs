@@ -12,12 +12,15 @@ use crate::effect::EffectPool;
 use crate::hitbox::HitboxManager;
 use crate::ggez_util::mutate_from_key;
 use crate::command_input_parser;
+use crate::cue::CueList;
+use crate::effect::Command;
+use crate::command_input_parser::Chunk;
 
-const INITIAL_WIDTH: f32 = 800.0;
+const INITIAL_WIDTH: f32 = 1000.0;
 const INITIAL_HEIGHT: f32 = 600.0;
 
 pub fn run_gui(installation: Installation, effect_pool: EffectPool,
-               dmx_send: mpsc::Sender<Vec<u8>>)
+               cue_list: CueList, dmx_send: mpsc::Sender<Vec<u8>>)
 {
     let (mut ctx, mut event_loop) = ContextBuilder::new("my_gui", "Author")
         .window_mode(WindowMode {
@@ -33,7 +36,8 @@ pub fn run_gui(installation: Installation, effect_pool: EffectPool,
         .build()
         .expect("Could not create ggez context!");
 
-    let mut gui = Visualizer::new(&mut ctx, 1.0, installation, effect_pool, dmx_send);
+    let mut gui = Visualizer::new(&mut ctx, 1.0, installation, effect_pool,
+                                  cue_list, dmx_send);
 
     match event::run(&mut ctx, &mut event_loop, &mut gui) {
         Ok(_) => println!("Exited GUI"),
@@ -53,6 +57,7 @@ struct Visualizer {
     hidpi_factor: f32,
     installation: Installation,
     effect_pool: EffectPool,
+    cue_list: CueList,
     dmx_send: mpsc::Sender<Vec<u8>>,
     dmx_chain: Vec<u8>,
     selected: Vec<String>,
@@ -65,7 +70,7 @@ struct Visualizer {
 
 impl Visualizer {
     pub fn new(ctx: &mut Context, hidpi_factor: f32,
-               installation: Installation, effect_pool: EffectPool,
+               installation: Installation, effect_pool: EffectPool, cue_list: CueList,
                dmx_send: mpsc::Sender<Vec<u8>>) -> Self
     {
         let mut visualizer = Self {
@@ -73,6 +78,7 @@ impl Visualizer {
             hidpi_factor: hidpi_factor,
             installation: installation,
             effect_pool: effect_pool,
+            cue_list: cue_list,
             dmx_send: dmx_send,
             dmx_chain: vec![],
             selected: vec![],
@@ -240,6 +246,7 @@ impl EventHandler for Visualizer {
         render_installation(ctx, &self.installation, &self.selected,
                             &self.installation_view_origin, self.installation_view_scale);
         self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.effect_pool,
+                                  &self.cue_list,
                                   &self.dmx_status, &self.dmx_chain,
                                   &mut self.command_input_buffer);
         graphics::present(ctx)
@@ -279,11 +286,30 @@ impl EventHandler for Visualizer {
 
         match keycode {
             KeyCode::Return | KeyCode::NumpadEnter => {
-                let commands = command_input_parser::parse(&self.command_input_buffer);
+                let chunks = command_input_parser::parse(&self.command_input_buffer);
+                let commands = expand_cues(chunks, &self.cue_list);
                 self.effect_pool.add_commands(commands);
                 self.command_input_buffer.clear();
             },
             _ => {},
         }
     }
+}
+
+pub fn expand_cues(chunks: Vec<Chunk>, cue_list: &CueList) -> Vec<Command> {
+    let mut commands = vec![];
+
+    for chunk in chunks {
+        match chunk {
+            Chunk::Effect(e) => commands.push(e),
+            Chunk::CueNum(i) => {
+                let command = cue_list.cue_command(i - 1);
+                let chunks = command_input_parser::parse(&command.unwrap());
+                let mut result = expand_cues(chunks, cue_list);
+                commands.append(&mut result);
+            }
+        }
+    }
+
+    commands
 }

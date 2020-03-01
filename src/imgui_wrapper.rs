@@ -6,6 +6,7 @@ use gfx_core::handle::RenderTargetView;
 use gfx_device_gl;
 use ggez::{graphics, Context};
 use crate::effect::EffectPool;
+use crate::cue::CueList;
 use crate::gui::DmxStatus;
 
 #[derive(Copy, Clone, PartialEq, Debug, Default)]
@@ -106,7 +107,8 @@ impl ImGuiWrapper {
     }
 
     pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32,
-                  effect_pool: &mut EffectPool, dmx_status: &DmxStatus, dmx_chain: &Vec<u8>,
+                  effect_pool: &mut EffectPool, cue_list: &CueList,
+                  dmx_status: &DmxStatus, dmx_chain: &Vec<u8>,
                   command_input_buffer: &str)
     {
         self.update_mouse();
@@ -148,6 +150,15 @@ impl ImGuiWrapper {
             .build(&ui, || {
                 let buffer = ImString::new(command_input_buffer.to_owned());
                 ui.text(&buffer);
+        });
+
+        imgui::Window::new(im_str!("Cue List"))
+            .size([200.0, 400.0], imgui::Condition::FirstUseEver)
+            .position([200.0, 200.0], imgui::Condition::FirstUseEver)
+            .build(&ui, || {
+                for cue in cue_list.cues() {
+                    ui.text(im_str!("{} {}", cue.name(), cue.command()));
+                }
         });
 
         window_rounding.pop(&ui);
