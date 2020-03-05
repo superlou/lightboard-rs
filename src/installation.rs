@@ -35,7 +35,7 @@ impl Installation {
                 match element.kind() {
                     ElementKind::Intensity(_) => element.set_kind(ElementKind::Intensity(0.0)),
                     ElementKind::Rgbi(_) => element.set_kind(ElementKind::Rgbi(Color::black())),
-                    ElementKind::Rgbiu{rgb: _, uv: _} => {
+                    ElementKind::Rgbiu{..} => {
                         element.set_kind(ElementKind::Rgbiu{
                             rgb: Color::black(),
                             uv: 0.0,

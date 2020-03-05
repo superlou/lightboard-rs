@@ -97,10 +97,6 @@ impl EffectPool {
         &self.installation
     }
 
-    pub fn effects_mut(&mut self) -> &mut Vec<Effect> {
-        &mut self.effects
-    }
-
     pub fn add_commands(&mut self, mut commands: Vec<Command>) {
         self.command_queue.append(&mut commands);
     }
@@ -133,7 +129,7 @@ impl Effect {
                patterns: Vec<Pattern>) -> Self {
         Self {
             name: name.to_owned(),
-            strength: strength,
+            strength,
             effect_elements: elements,
             effect_patterns: patterns,
         }

@@ -57,7 +57,7 @@ fn effect_pool_ui(ui: &imgui::Ui, effect_pool: &mut EffectPool) {
                 ui.same_line(26.0);
 
                 let token = ui.begin_group();
-                ui.text(&ImString::new(effect.name().clone()));
+                ui.text(&ImString::new(effect.name()));
                 let key = im_str!("{}{}", ROW_KEY_MAP[row as usize], col + 1);
                 ui.text(key);
                 token.end(&ui);
@@ -95,8 +95,8 @@ impl ImGuiWrapper {
       let renderer = Renderer::init(&mut imgui, &mut *factory, shaders).unwrap();
 
       Self {
-        imgui: imgui,
-        renderer: renderer,
+        imgui,
+        renderer,
         last_frame: Instant::now(),
         mouse_state: MouseState::default(),
       }
@@ -108,7 +108,7 @@ impl ImGuiWrapper {
 
     pub fn render(&mut self, ctx: &mut Context, hidpi_factor: f32,
                   effect_pool: &mut EffectPool, cue_list: &CueList,
-                  dmx_status: &DmxStatus, dmx_chain: &Vec<u8>,
+                  dmx_status: &DmxStatus, dmx_chain: &[u8],
                   command_input_buffer: &str)
     {
         self.update_mouse();
@@ -168,10 +168,9 @@ impl ImGuiWrapper {
         self.renderer.render(
             &mut *factory,
             encoder,
-            &mut RenderTargetView::new(render_target.clone()),
+            &mut RenderTargetView::new(render_target),
             draw_data
         ).unwrap();
-
     }
 
     fn update_mouse(&mut self) {

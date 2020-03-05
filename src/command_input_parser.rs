@@ -1,6 +1,5 @@
 use nom::character::complete::{digit1, one_of};
 use nom::sequence::pair;
-use nom::multi::many1;
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::multi::separated_list;

@@ -75,11 +75,11 @@ impl Visualizer {
     {
         let mut visualizer = Self {
             imgui_wrapper: ImGuiWrapper::new(ctx),
-            hidpi_factor: hidpi_factor,
-            installation: installation,
-            effect_pool: effect_pool,
-            cue_list: cue_list,
-            dmx_send: dmx_send,
+            hidpi_factor,
+            installation,
+            effect_pool,
+            cue_list,
+            dmx_send,
             dmx_chain: vec![],
             selected: vec![],
             hitbox_manager: HitboxManager::new(),
@@ -116,17 +116,17 @@ lazy_static! {
     static ref COLOR_FIXTURE_OUTLINE_SELECTED: graphics::Color = graphics::Color::new(1.0, 1.0, 1.0, 1.0);
 }
 
-fn render_installation(ctx: &mut Context, installation: &Installation, selected: &Vec<String>,
-                       origin: &Point2<f32>, scale: f32)
+fn render_installation(ctx: &mut Context, installation: &Installation, selected: &[String],
+                       origin: Point2<f32>, scale: f32)
 {
     for (name, fixture) in installation.fixtures() {
-        let is_selected = selected.as_slice().contains(name);
-        draw_fixture(ctx, fixture, name, is_selected, &origin, scale);
+        let is_selected = selected.contains(name);
+        draw_fixture(ctx, fixture, name, is_selected, origin, scale);
     }
 }
 
 fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: bool,
-                origin: &Point2<f32>, scale: f32)
+                origin: Point2<f32>, scale: f32)
 {
     let location = fixture.pos();
     let origin = origin.coords;
@@ -167,7 +167,7 @@ fn draw_fixture(ctx: &mut Context, fixture: &Fixture, name: &str, is_selected: b
                 ).unwrap();
                 graphics::draw(ctx, &circle, DrawParam::default().dest(location * scale + origin)).unwrap();
             },
-            ElementKind::Rgbiu{rgb: color, uv: _} => {
+            ElementKind::Rgbiu{rgb: color, ..} => {
                 let color = graphics::Color::new(color.r(), color.g(), color.b(), 1.0);
                 let circle = graphics::Mesh::new_circle(
                     ctx,
@@ -244,11 +244,11 @@ impl EventHandler for Visualizer {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, graphics::BLACK);
         render_installation(ctx, &self.installation, &self.selected,
-                            &self.installation_view_origin, self.installation_view_scale);
+                            self.installation_view_origin, self.installation_view_scale);
         self.imgui_wrapper.render(ctx, self.hidpi_factor, &mut self.effect_pool,
                                   &self.cue_list,
                                   &self.dmx_status, &self.dmx_chain,
-                                  &mut self.command_input_buffer);
+                                  &self.command_input_buffer);
         graphics::present(ctx)
     }
 

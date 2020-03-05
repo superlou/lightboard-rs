@@ -73,10 +73,10 @@ impl Fixture {
         Element::arrange_linear(&mut elements);
 
         Self {
-            elements: elements,
-            pos: pos,
-            dmx_vec: dmx_vec,
-            channel: channel,
+            elements,
+            pos,
+            dmx_vec,
+            channel,
         }
     }
 

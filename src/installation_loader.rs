@@ -86,7 +86,7 @@ fn load_elements(kind: &str, mode: &str) -> (HashMap<String, Element>, usize) {
 
     config.modes.retain(|mode_config| mode_config.name == mode);
 
-    if config.modes.len() >= 1 {
+    if !config.modes.is_empty() {
         let elements = config.modes[0].elements.clone();
         (elements.into_iter().map(|(name, config)| {
             (name, config.into())
@@ -98,9 +98,9 @@ fn load_elements(kind: &str, mode: &str) -> (HashMap<String, Element>, usize) {
 
 pub fn build_from_config(config_file: &str) -> Installation {
     let config_text = read_to_string(config_file)
-                        .expect(&format!("Failed to find {}", config_file));
+                        .unwrap_or_else(|_| panic!("Failed to find {}", config_file));
     let config: InstallationConfig = toml::from_str(&config_text)
-                        .expect(&format!("Failed to parse {}", config_file));
+                        .unwrap_or_else(|_| panic!("Failed to parse {}", config_file));
 
     let fixtures: HashMap<_, _> = config.fixtures.into_iter().map(|(name, config)| {
         let (elements, num_channels) = load_elements(&config.kind, &config.mode);

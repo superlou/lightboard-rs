@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use toml::value::Value;
 use serde::Deserialize;
 use std::fs::read_to_string;
-use std::fmt;
 use crate::effect::{EffectPool, Effect, GroupMap, GroupElement, EffectElement};
 use crate::pattern::Pattern;
 use crate::cue::CueList;
@@ -41,7 +40,7 @@ fn build_effect_element(config: &HashMap<String, Value>) -> Option<EffectElement
     };
 
     let value = config.get("color")?;
-    let tokens: Vec<&str> = target.split(":").collect();
+    let tokens: Vec<&str> = target.split(':').collect();
     let fixture = tokens[0];
     let element = tokens[1];
     let property = tokens[2];
@@ -55,7 +54,7 @@ fn build_pattern(config: &mut HashMap<String, Value>, groups: &GroupMap) -> Opti
         _ => return None,
     };
 
-    let tokens: Vec<&str> = target.split(":").collect();
+    let tokens: Vec<&str> = target.split(':').collect();
     let target = tokens[0];
     let property = tokens[1];
 
@@ -74,7 +73,7 @@ fn build_pattern(config: &mut HashMap<String, Value>, groups: &GroupMap) -> Opti
 
 fn build_group_elements(config: &GroupConfig) -> Vec<GroupElement> {
     config.elements.iter().map(|s| {
-        let parts: Vec<&str> = s.split(":").collect();
+        let parts: Vec<&str> = s.split(':').collect();
         GroupElement {
             fixture: parts[0].to_owned(),
             element: parts[1].to_owned(),
@@ -90,11 +89,11 @@ pub fn build_from_config(config_file: &str) -> EffectPool {
     }).collect();
 
     let effects = config.effects.into_iter().map(|effect_config| {
-        let elements = effect_config.elements.unwrap_or(vec![]).iter()
+        let elements = effect_config.elements.unwrap_or_else(|| vec![]).iter()
             .filter_map(|c| build_effect_element(c))
             .collect();
 
-        let patterns = effect_config.patterns.unwrap_or(vec![]).iter_mut()
+        let patterns = effect_config.patterns.unwrap_or_else(|| vec![]).iter_mut()
             .filter_map(|mut c| build_pattern(&mut c, &groups))
             .collect();
 
@@ -103,7 +102,7 @@ pub fn build_from_config(config_file: &str) -> EffectPool {
 
     let mut pool = EffectPool::new(
         effects, groups,
-        config.installation.unwrap_or("installation.toml".to_owned()),
+        config.installation.unwrap_or_else(|| "installation.toml".to_owned()),
     );
 
     for (key, effect_name) in config.pool.iter() {

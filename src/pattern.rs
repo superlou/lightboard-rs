@@ -69,11 +69,8 @@ impl Pattern {
             for pair in options_table.pairs::<String, Table>() {
                 let (name, option_table) = pair.unwrap();
 
-                match options.get(&name) {
-                    Some(value) => {
-                        option_table.set("default", toml_to_lua(value, ctx).unwrap()).unwrap();
-                    },
-                    _ => {},
+                if let Some(value) = options.get(&name) {
+                    option_table.set("default", toml_to_lua(value, ctx).unwrap()).unwrap();
                 }
 
                 let default: rlua::Value = option_table.get("default").unwrap();
@@ -84,7 +81,7 @@ impl Pattern {
         }).unwrap();
 
         Self {
-            lua: lua,
+            lua,
             group: group.to_owned(),
             property: property.to_owned(),
             script_name: script_name.to_owned(),

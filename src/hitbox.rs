@@ -23,7 +23,7 @@ impl HitboxManager {
 
     pub fn add(&mut self, rect: Rect, target: &str) {
         let hitbox = Hitbox {
-            rect: rect,
+            rect,
             target: target.to_owned(),
         };
 

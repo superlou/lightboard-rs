@@ -8,9 +8,7 @@ pub struct Color {
 pub type Intensity = f32;
 
 fn clamp(x: f32) -> f32 {
-    if x.is_nan() {
-        0.0
-    } else if x < 0.0 {
+    if x.is_nan() || x < 0.0 {
         0.0
     } else if x > 1.0 {
         1.0
@@ -62,8 +60,8 @@ impl std::ops::Add for Color {
 impl From<i32> for Color {
     fn from(x: i32) -> Self {
         let r = ((x >> 16) & 0xff) as f32 / 255.0;
-        let g = ((x >>  8) & 0xff) as f32 / 255.0;
-        let b = ((x >>  0) & 0xff) as f32 / 255.0;
+        let g = ((x >> 8) & 0xff) as f32 / 255.0;
+        let b = (x & 0xff) as f32 / 255.0;
         Color::new(r, g, b)
     }
 }

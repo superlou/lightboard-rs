@@ -14,10 +14,9 @@ pub fn update(recv: mpsc::Receiver<Vec<u8>>) {
     let mut data = vec![];
 
     loop {
-        match recv.try_recv() {
-            Ok(new_data) => data = new_data,
-            Err(_) => {},
-        };
+        if let Ok(new_data) = recv.try_recv() {
+            data = new_data;
+        }
 
         dmx_port.send_dmx_packet(&data).unwrap();
         thread::sleep(time::Duration::new(0, 20_000_000));
