@@ -8,6 +8,8 @@ pub struct Pattern {
     group: String,
     property: String,
     script_name: String,
+    options: HashMap<String, toml::Value>,
+    element_count: usize,
 }
 
 impl fmt::Debug for Pattern {
@@ -47,7 +49,32 @@ impl Pattern {
     {
         let script = "patterns/".to_owned() + script_name;
         let script = read_to_string(script).unwrap();
+        let lua = Pattern::build_lua_env(&script, group, element_count, &options);
 
+        Self {
+            lua,
+            group: group.to_owned(),
+            property: property.to_owned(),
+            script_name: script_name.to_owned(),
+            options,
+            element_count,
+        }
+    }
+
+    pub fn reload(&mut self) {
+        let script = "patterns/".to_owned() + &self.script_name;
+        let script = read_to_string(script).unwrap();
+
+        let group = &self.group;
+        let element_count = self.element_count;
+        let options = &self.options;
+
+        self.lua = Pattern::build_lua_env(&script, group, element_count, options);
+    }
+
+    fn build_lua_env(script: &str, group: &str, element_count: usize,
+                     options: &HashMap<String, toml::Value>) -> Lua
+    {
         let lua = Lua::new();
 
         lua.context(|ctx| {
@@ -80,12 +107,7 @@ impl Pattern {
             ctx.load("").eval::<()>() // todo Why can't I use Ok(())?
         }).unwrap();
 
-        Self {
-            lua,
-            group: group.to_owned(),
-            property: property.to_owned(),
-            script_name: script_name.to_owned(),
-        }
+        lua
     }
 
     pub fn update(&mut self) -> Vec<i32> {

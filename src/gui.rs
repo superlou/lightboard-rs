@@ -5,6 +5,10 @@ use ggez::event::{MouseButton, KeyCode, KeyMods};
 use ggez::event::{self, EventHandler};
 use ggez::nalgebra::{Point2, Vector2};
 use std::sync::mpsc;
+use std::sync::mpsc::Receiver;
+use std::path::Path;
+use std::thread;
+use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use crate::imgui_wrapper::ImGuiWrapper;
 use crate::installation::Installation;
 use crate::fixture::{Fixture, ElementKind};
@@ -52,6 +56,8 @@ pub enum DmxStatus {
     Unknown,
 }
 
+type NotifyRx = Receiver<Result<notify::event::Event, notify::Error>>;
+
 struct Visualizer {
     imgui_wrapper: ImGuiWrapper,
     hidpi_factor: f32,
@@ -66,6 +72,8 @@ struct Visualizer {
     installation_view_scale: f32,
     dmx_status: DmxStatus,
     command_input_buffer: String,
+    watcher: Option<RecommendedWatcher>,
+    watcher_recv: Option<NotifyRx>,
 }
 
 impl Visualizer {
@@ -87,8 +95,11 @@ impl Visualizer {
             installation_view_scale: 40.0,
             dmx_status: DmxStatus::Unknown,
             command_input_buffer: String::new(),
+            watcher: None,
+            watcher_recv: None,
         };
 
+        visualizer.watch("patterns");
         visualizer.update_hitboxes();
 
         visualizer
@@ -107,6 +118,14 @@ impl Visualizer {
                                  1.0 * scale);
             self.hitbox_manager.add(rect, name);
         }
+    }
+
+    fn watch<P: AsRef<Path>>(&mut self, path: P) {
+        let (tx, rx) = std::sync::mpsc::channel();
+        let mut watcher: RecommendedWatcher = Watcher::new_immediate(move |res| tx.send(res).unwrap()).unwrap();
+        watcher.watch(path, RecursiveMode::Recursive).unwrap();
+        self.watcher = Some(watcher);
+        self.watcher_recv = Some(rx);
     }
 }
 
@@ -227,6 +246,12 @@ impl EventHandler for Visualizer {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         if !ggez::timer::check_update_time(ctx, 30) {
             return Ok(())
+        }
+
+        if let Some(rx) = &self.watcher_recv {
+            if let Ok(event) = rx.try_recv() {
+                self.effect_pool.reload_patterns();
+            }
         }
 
         self.effect_pool.run_commands();

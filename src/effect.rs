@@ -122,6 +122,12 @@ impl EffectPool {
 
         self.command_queue.clear();
     }
+
+    pub fn reload_patterns(&mut self) {
+        for effect in self.effects.iter_mut() {
+            effect.reload_patterns();
+        }
+    }
 }
 
 impl Effect {
@@ -174,6 +180,12 @@ impl Effect {
                     element.set_kind(kind);
                 }
             }
+        }
+    }
+
+    pub fn reload_patterns(&mut self) {
+        for pattern in self.effect_patterns.iter_mut() {
+            pattern.reload();
         }
     }
 
