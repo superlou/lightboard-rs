@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use rlua::{Lua, Function, Table, ToLua, Context};
 
 pub struct Pattern {
-    lua: Lua,
+    lua: Option<Lua>,
     group: String,
     property: String,
     script_name: String,
@@ -49,7 +49,13 @@ impl Pattern {
     {
         let script = "patterns/".to_owned() + script_name;
         let script = read_to_string(script).unwrap();
-        let lua = Pattern::build_lua_env(&script, group, element_count, &options);
+        let lua = match Pattern::build_lua_env(&script, group, element_count, &options) {
+            Ok(lua) => Some(lua),
+            Err(e) => {
+                dbg!(e);
+                None
+            },
+        };
 
         Self {
             lua,
@@ -69,66 +75,77 @@ impl Pattern {
         let element_count = self.element_count;
         let options = &self.options;
 
-        self.lua = Pattern::build_lua_env(&script, group, element_count, options);
+        self.lua = match Pattern::build_lua_env(&script, group, element_count, options) {
+            Ok(lua) => Some(lua),
+            Err(e) => {
+                dbg!(e);
+                None
+            },
+        };
     }
 
     fn build_lua_env(script: &str, group: &str, element_count: usize,
-                     options: &HashMap<String, toml::Value>) -> Lua
+                     options: &HashMap<String, toml::Value>) -> Result<Lua, rlua::Error>
     {
         let lua = Lua::new();
 
         lua.context(|ctx| {
             let globals = ctx.globals();
 
-            globals.set("group_name", group.to_owned()).unwrap();
-            globals.set("element_count", element_count).unwrap();
-            let options_table = ctx.create_table().unwrap();
-            globals.set("options", options_table).unwrap();
+            globals.set("group_name", group.to_owned())?;
+            globals.set("element_count", element_count)?;
+            let options_table = ctx.create_table()?;
+            globals.set("options", options_table)?;
 
-            ctx.load(&script).exec().unwrap();
+            ctx.load(&script).exec()?;
 
-            let setup: Function = globals.get("setup").unwrap();
+            let setup: Function = globals.get("setup")?;
 
-            setup.call::<(), ()>(()).unwrap();
+            setup.call::<(), ()>(())?;
 
-            let options_table: Table = globals.get("options").unwrap();
+            let options_table: Table = globals.get("options")?;
 
             for pair in options_table.pairs::<String, Table>() {
-                let (name, option_table) = pair.unwrap();
+                let (name, option_table) = pair?;
 
                 if let Some(value) = options.get(&name) {
-                    option_table.set("default", toml_to_lua(value, ctx).unwrap()).unwrap();
+                    option_table.set("default", toml_to_lua(value, ctx)?)?;
                 }
 
-                let default: rlua::Value = option_table.get("default").unwrap();
-                option_table.set("value", default).unwrap();
+                let default: rlua::Value = option_table.get("default")?;
+                option_table.set("value", default)?;
             }
 
             ctx.load("").eval::<()>() // todo Why can't I use Ok(())?
-        }).unwrap();
+        })?;
 
-        lua
+        Ok(lua)
     }
 
     pub fn update(&mut self) -> Vec<i32> {
         let mut values = vec![];
         let dt = 1.0 / 30.0;
 
-        self.lua.context(|ctx| {
-            let globals = ctx.globals();
-            let update: Function = globals.get("update").unwrap();
+        match &self.lua {
+            Some(lua) => {
+                lua.context(|ctx| {
+                    let globals = ctx.globals();
+                    let update: Function = globals.get("update").unwrap();
 
-            values = match update.call::<f32, Vec<i32>>(dt) {
-                Ok(x) => x,
-                Err(e) => {
-                    println!("Lua error in {}:update", self.script_name);
-                    println!("{}", e);
-                    vec![]
-                }
-            };
+                    values = match update.call::<f32, Vec<i32>>(dt) {
+                        Ok(x) => x,
+                        Err(e) => {
+                            println!("Lua error in {}:update", self.script_name);
+                            println!("{}", e);
+                            vec![]
+                        }
+                    };
 
-            ctx.load("").eval::<()>() // todo Why can't I use Ok(())?
-        }).unwrap();
+                    ctx.load("").eval::<()>() // todo Why can't I use Ok(())?
+                }).unwrap();
+            },
+            None => {},
+        }
 
         values
     }
