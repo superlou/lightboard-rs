@@ -249,7 +249,16 @@ impl EventHandler for Visualizer {
         }
 
         if let Some(rx) = &self.watcher_recv {
-            if let Ok(event) = rx.try_recv() {
+            // Drain all events, then reload patterns, since many events can
+            // be received at once.
+            // todo Consider a debounce.
+            let mut changed = false;
+
+            while rx.try_recv().is_ok() {
+                changed = true;
+            }
+
+            if changed {
                 self.effect_pool.reload_patterns();
             }
         }
