@@ -101,8 +101,6 @@ impl Pattern {
 
             let setup: Function = globals.get("setup")?;
 
-            setup.call::<(), ()>(())?;
-
             let options_table: Table = globals.get("options")?;
 
             for pair in options_table.pairs::<String, Table>() {
@@ -115,6 +113,8 @@ impl Pattern {
                 let default: rlua::Value = option_table.get("default")?;
                 option_table.set("value", default)?;
             }
+
+            setup.call::<(), ()>(())?;
 
             ctx.load("").eval::<()>() // todo Why can't I use Ok(())?
         })?;
