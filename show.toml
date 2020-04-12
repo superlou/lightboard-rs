@@ -27,7 +27,7 @@ name = "Pulse Pattern"
 
   [[effects.patterns]]
   target = "g1:color"
-  script = "pulse.lua"
+  script = "waveform.lua"
   color = 0x50F040
 
 [[effects]]
@@ -35,7 +35,7 @@ name = "Rev. Pulse Pattern"
 
   [[effects.patterns]]
   target = "g1:color"
-  script = "pulse.lua"
+  script = "waveform.lua"
   color = 0xC0C0FF
   reverse = true
 
@@ -48,7 +48,8 @@ name = "White Light Pulse"
 
   [[effects.patterns]]
   target = "g3:dimmer"
-  script = "pulse.lua"
+  script = "waveform.lua"
+  reflect = 1
 
 [pool]
 A1 = "A"
